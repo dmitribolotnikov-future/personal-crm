@@ -21,6 +21,7 @@
 ## Стек
 
 - Next.js (App Router), TypeScript
+- Next.js 16 новее твоих знаний: перед кодом читай `AGENTS.md`
 - React, Tailwind CSS, shadcn/ui
 - PostgreSQL, Drizzle: схема и миграции в коде
 - pnpm, `pnpm-lock.yaml` в git
