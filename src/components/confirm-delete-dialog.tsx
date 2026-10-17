@@ -19,6 +19,7 @@ type ConfirmDeleteDialogProps = {
   title: string;
   description: string;
   action: () => Promise<void>;
+  triggerVariant?: React.ComponentProps<typeof Button>["variant"];
   triggerSize?: React.ComponentProps<typeof Button>["size"];
 };
 
@@ -26,12 +27,13 @@ export function ConfirmDeleteDialog({
   title,
   description,
   action,
+  triggerVariant = "destructive",
   triggerSize = "default",
 }: ConfirmDeleteDialogProps) {
   return (
     <AlertDialog>
       <AlertDialogTrigger
-        render={<Button variant="destructive" size={triggerSize} />}
+        render={<Button variant={triggerVariant} size={triggerSize} />}
       >
         <Trash2 />
         Удалить

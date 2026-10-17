@@ -19,18 +19,24 @@ type NoteItemProps = {
   edited: boolean;
 };
 
+// A gray card like the benefit cards on the landing: date in mono caps, text, actions below
 export function NoteItem({ id, body, dateLabel, edited }: NoteItemProps) {
   const [editing, setEditing] = useState(false);
 
   return (
-    <li className="flex flex-col gap-2 rounded-xl p-4 ring-1 ring-foreground/10">
-      <div className="flex min-h-7 items-center justify-between gap-2">
-        <span className="text-sm text-muted-foreground">
-          {dateLabel}
-          {edited && " · изменено"}
-        </span>
-        {!editing && (
-          <div className="flex gap-1">
+    <li className="flex flex-col gap-2.5 rounded-28 bg-gray p-6 md:gap-3 md:rounded-32 md:p-8">
+      <span className="font-mono text-12 font-medium tracking-wide-60 text-accent-ink uppercase md:text-13">
+        {dateLabel}
+        {edited && " · изменено"}
+      </span>
+      {editing ? (
+        <NoteEditForm id={id} body={body} onDone={() => setEditing(false)} />
+      ) : (
+        <>
+          <p className="text-16 leading-body text-pretty break-words whitespace-pre-wrap md:text-17">
+            {body}
+          </p>
+          <div className="-ml-3.5 flex gap-1">
             <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
               <Pencil />
               Изменить
@@ -39,15 +45,11 @@ export function NoteItem({ id, body, dateLabel, edited }: NoteItemProps) {
               title="Удалить заметку?"
               description="Заметка удалится навсегда, восстановить её будет нельзя."
               action={deleteNote.bind(null, id)}
+              triggerVariant="ghost"
               triggerSize="sm"
             />
           </div>
-        )}
-      </div>
-      {editing ? (
-        <NoteEditForm id={id} body={body} onDone={() => setEditing(false)} />
-      ) : (
-        <p className="text-sm whitespace-pre-wrap">{body}</p>
+        </>
       )}
     </li>
   );
@@ -74,7 +76,7 @@ function NoteEditForm({
   const errorId = `note-${id}-error`;
 
   return (
-    <form action={formAction} className="flex flex-col gap-2">
+    <form action={formAction} className="flex flex-col gap-3">
       <Textarea
         name="body"
         defaultValue={state.body ?? body}
@@ -83,6 +85,7 @@ function NoteEditForm({
         aria-label="Текст заметки"
         aria-invalid={state.errors ? true : undefined}
         aria-describedby={state.errors ? errorId : undefined}
+        className="bg-white"
       />
       <FieldError id={errorId} errors={state.errors} />
       <div className="flex gap-2">

@@ -103,12 +103,12 @@ function ContactFormFields({
       </div>
 
       {state.message && (
-        <p className="text-sm text-destructive" role="alert">
+        <p className="text-14 text-danger" role="alert">
           {state.message}
         </p>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2 pt-1">
         <SubmitButton size="lg" pendingLabel="Сохраняю…">
           {submitLabel}
         </SubmitButton>

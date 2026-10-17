@@ -9,9 +9,11 @@ import { listContacts } from "@/lib/data";
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="font-heading text-2xl font-semibold">Контакты</h1>
+    <div className="flex flex-col gap-6 md:gap-8">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-34 leading-heading font-bold tracking-tight-40 md:text-42 md:tracking-tight-45">
+          Контакты
+        </h1>
         <Link href="/contacts/new" className={buttonVariants({ size: "lg" })}>
           <Plus />
           Добавить контакт
@@ -32,8 +34,8 @@ async function Contacts() {
 function ContactListSkeleton() {
   return (
     <div className="flex flex-col gap-4">
-      <Skeleton className="h-8" />
-      <Skeleton className="h-48 rounded-xl" />
+      <Skeleton className="h-12 rounded-pill" />
+      <Skeleton className="h-96 rounded-28 md:rounded-32" />
     </div>
   );
 }

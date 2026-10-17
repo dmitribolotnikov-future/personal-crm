@@ -7,7 +7,7 @@ export function FieldError({
 }) {
   if (!errors?.length) return null;
   return (
-    <p id={id} className="text-sm text-destructive">
+    <p id={id} className="text-14 text-danger">
       {errors[0]}
     </p>
   );

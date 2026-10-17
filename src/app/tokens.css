@@ -1,0 +1,110 @@
+/*
+  Design tokens - the only source of colors, fonts, type sizes, spacing, radii and shadows.
+  Values match the landing (personal-crm-landing, src/styles/tokens.css) so both look the same.
+  Tailwind defaults are reset, so only these exist: components added with `shadcn add`
+  come with default classes and must be restyled with these tokens.
+*/
+@theme {
+  --color-*: initial;
+  --font-*: initial;
+  --font-weight-*: initial;
+  --text-*: initial;
+  --leading-*: initial;
+  --tracking-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+
+  /* Colors */
+  --color-bg: #fbfafa;
+  --color-white: #ffffff;
+  --color-ink: #0d0c22;
+  --color-ink-soft: #3d3d4e;
+  --color-muted: #8b8796;
+  --color-muted-2: #5a5866;
+  --color-accent: #e2602a;
+  --color-accent-ink: #b8461a;
+  --color-accent-deep: #9a3a12;
+  --color-accent-soft: #ffb08a;
+  --color-powder: #f8dfd2;
+  --color-gray: #f1eff4;
+  --color-gray-2: #f7f5f8;
+  --color-avatar-gray: #dedbe5;
+  --color-line: #e4e2ea;
+  --color-line-dark: #2a2940;
+  --color-on-dark-muted: #c9c8d6;
+  /* App only: errors and deleting; the landing has neither */
+  --color-danger: #b3261e;
+
+  /* Font families; the variables they point to are set by next/font in layout.tsx */
+  --font-sans: var(--font-onest);
+  --font-mono: var(--font-jetbrains-mono);
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /* Font sizes in px: the name is the size */
+  --text-11: 11px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-15: 15px;
+  --text-16: 16px;
+  --text-17: 17px;
+  --text-18: 18px;
+  --text-20: 20px;
+  --text-22: 22px;
+  --text-24: 24px;
+  --text-26: 26px;
+  --text-34: 34px;
+  --text-38: 38px;
+  --text-42: 42px;
+
+  /* Line heights */
+  --leading-normal: normal;
+  --leading-none: 1;
+  --leading-display: 1.02;
+  --leading-heading: 1.05;
+  --leading-title: 1.2;
+  --leading-snug: 1.4;
+  --leading-lead: 1.45;
+  --leading-body: 1.5;
+
+  /* Letter spacing */
+  --tracking-tight-50: -0.05em;
+  --tracking-tight-45: -0.045em;
+  --tracking-tight-40: -0.04em;
+  --tracking-tight-30: -0.03em;
+  --tracking-tight-25: -0.025em;
+  --tracking-tight-20: -0.02em;
+  --tracking-wide-60: 0.06em;
+  --tracking-wide-80: 0.08em;
+
+  /*
+    Spacing: every padding, gap, margin, size and offset is a multiple of this 4px step,
+    e.g. p-5 = 20px, gap-4.5 = 18px, max-w-200 = 800px
+  */
+  --spacing: 4px;
+
+  /* Radii */
+  --radius-circle: 50%;
+  --radius-pill: 99px;
+  --radius-12: 12px;
+  --radius-14: 14px;
+  --radius-16: 16px;
+  --radius-18: 18px;
+  --radius-20: 20px;
+  --radius-24: 24px;
+  --radius-28: 28px;
+  --radius-32: 32px;
+  --radius-36: 36px;
+  --radius-40: 40px;
+  --radius-48: 48px;
+
+  /* Shadows */
+  --shadow-card: 0 10px 30px rgb(13 12 34 / 0.1);
+  --shadow-card-lg: 0 14px 40px rgb(13 12 34 / 0.1);
+  --shadow-pill: 0 10px 30px rgb(13 12 34 / 0.08);
+}

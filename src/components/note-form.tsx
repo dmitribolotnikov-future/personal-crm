@@ -16,7 +16,7 @@ export function NoteForm({ contactId }: { contactId: number }) {
   );
 
   return (
-    <form action={formAction} className="flex flex-col gap-2">
+    <form action={formAction} className="flex flex-col gap-3">
       <Textarea
         name="body"
         // After a successful save state.body is empty, so the field clears

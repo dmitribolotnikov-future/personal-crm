@@ -1,12 +1,22 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { JetBrains_Mono, Onest } from "next/font/google";
 import Link from "next/link";
+
+import { Logo } from "@/components/logo";
 
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-sans",
+// Same fonts as the landing; the variables are used in tokens.css
+const onest = Onest({
+  variable: "--font-onest",
   subsets: ["latin", "cyrillic"],
+  fallback: ["system-ui", "sans-serif"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin", "cyrillic"],
+  fallback: ["ui-monospace", "monospace"],
 });
 
 export const metadata: Metadata = {
@@ -16,16 +26,20 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ru" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">
-        <header className="border-b">
-          <div className="mx-auto flex h-14 w-full max-w-2xl items-center px-4">
-            <Link href="/" className="font-heading text-lg font-semibold">
-              Мои контакты
-            </Link>
-          </div>
+    <html
+      lang="ru"
+      className={`${onest.variable} ${jetbrainsMono.variable} h-full antialiased`}
+    >
+      <body className="flex min-h-full flex-col bg-bg font-sans leading-normal text-ink">
+        <header className="mx-auto w-full max-w-200 px-5 pt-5.5 md:px-10 md:py-7">
+          <Link
+            href="/"
+            className="rounded-12 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent"
+          >
+            <Logo className="text-20 md:text-24" />
+          </Link>
         </header>
-        <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
+        <main className="mx-auto w-full max-w-200 flex-1 px-5 pt-8 pb-16 md:px-10 md:pt-4 md:pb-24">
           {children}
         </main>
       </body>

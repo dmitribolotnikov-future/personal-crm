@@ -11,9 +11,11 @@ export default function EditContactPage({
   params,
 }: PageProps<"/contacts/[id]/edit">) {
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="font-heading text-2xl font-semibold">Изменить контакт</h1>
-      <Suspense fallback={<Skeleton className="h-80 rounded-xl" />}>
+    <div className="flex flex-col gap-6 md:gap-8">
+      <h1 className="text-34 leading-heading font-bold tracking-tight-40 md:text-42 md:tracking-tight-45">
+        Изменить контакт
+      </h1>
+      <Suspense fallback={<Skeleton className="h-96 rounded-28" />}>
         <EditContactForm params={params} />
       </Suspense>
     </div>
