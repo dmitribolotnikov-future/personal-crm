@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { contacts, notes } from "@/db/schema";
 import {
   contactFields,
@@ -36,7 +36,7 @@ export async function createContact(
     return { values, errors: z.flattenError(parsed.error).fieldErrors };
   }
 
-  const [created] = await db
+  const [created] = await getDb()
     .insert(contacts)
     .values(parsed.data)
     .returning({ id: contacts.id });
@@ -57,7 +57,7 @@ export async function updateContact(
     return { values, errors: z.flattenError(parsed.error).fieldErrors };
   }
 
-  const updated = await db
+  const updated = await getDb()
     .update(contacts)
     .set(parsed.data)
     .where(eq(contacts.id, id))
@@ -73,7 +73,7 @@ export async function updateContact(
 export async function deleteContact(contactId: number) {
   const id = idSchema.parse(contactId);
   // Notes are removed by the database (ON DELETE CASCADE)
-  await db.delete(contacts).where(eq(contacts.id, id));
+  await getDb().delete(contacts).where(eq(contacts.id, id));
 
   revalidateAll();
   redirect("/");
@@ -91,7 +91,7 @@ export async function addNote(
     return { body, errors: z.flattenError(parsed.error).fieldErrors.body };
   }
 
-  await db.insert(notes).values({ contactId: id, body: parsed.data.body });
+  await getDb().insert(notes).values({ contactId: id, body: parsed.data.body });
 
   revalidateAll();
   return { ok: true };
@@ -109,7 +109,7 @@ export async function updateNote(
     return { body, errors: z.flattenError(parsed.error).fieldErrors.body };
   }
 
-  const updated = await db
+  const updated = await getDb()
     .update(notes)
     .set({ body: parsed.data.body })
     .where(eq(notes.id, id))
@@ -124,7 +124,7 @@ export async function updateNote(
 
 export async function deleteNote(noteId: number) {
   const id = idSchema.parse(noteId);
-  await db.delete(notes).where(eq(notes.id, id));
+  await getDb().delete(notes).where(eq(notes.id, id));
 
   revalidateAll();
 }

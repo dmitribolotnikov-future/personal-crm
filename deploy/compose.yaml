@@ -1,0 +1,69 @@
+# Production stack on the server, compose project "prod".
+# CI copies this file and the scripts to /srv/personal-crm, where .env with the
+# database settings lives (created by hand, never in git). APP_IMAGE is set by deploy.sh.
+
+# Container logs are capped so they cannot fill the disk
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+# Everything that runs the app image: the app itself and its one-off jobs
+x-app: &app
+  image: ${APP_IMAGE:?run deploy.sh, it sets APP_IMAGE}
+  environment:
+    POSTGRES_HOST: db
+    POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+  depends_on:
+    db:
+      condition: service_healthy
+  logging: *logging
+
+services:
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+    # No published port: only containers of this project reach the database
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging: *logging
+
+  app:
+    <<: *app
+    restart: unless-stopped
+    # nginx proxies app.lichnocrm.ru here
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # One-off jobs: started only by `docker compose run`, never by `up`.
+  # The flag hides node's notice that src/db/*.ts are ES modules: they are, and that is fine
+  migrate:
+    <<: *app
+    profiles: ["jobs"]
+    command: ["node", "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON", "scripts/migrate.mts"]
+
+  seed:
+    <<: *app
+    profiles: ["jobs"]
+    command: ["node", "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON", "scripts/seed.mts"]
+
+volumes:
+  db-data:

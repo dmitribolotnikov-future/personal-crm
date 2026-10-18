@@ -3,13 +3,15 @@
 // a repeat run finds them already in the database and adds nothing.
 // Texts are in Russian because the app shows them to the user as is.
 
-import { loadEnvConfig } from "@next/env";
+// @next/env is CommonJS: an ES module (.mts) gets its exports as the default one
+import nextEnv from "@next/env";
 import { and, count, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-import { getConnectionConfig } from "../src/db/connection";
-import { contacts, notes } from "../src/db/schema";
+// Explicit .ts extensions let the app image run this file with plain node
+import { getConnectionConfig } from "../src/db/connection.ts";
+import { contacts, notes } from "../src/db/schema.ts";
 
 const CONTACT_COUNT = 1000;
 const RANDOM_SEED = 20261010;
@@ -670,7 +672,7 @@ function* chunks<T>(items: T[], size: number): Generator<T[]> {
 
 async function main() {
   // Runs outside Next.js, so load .env the same way Next.js does
-  loadEnvConfig(process.cwd());
+  nextEnv.loadEnvConfig(process.cwd());
 
   const now = new Date();
   const usedNames = new Set<string>();
