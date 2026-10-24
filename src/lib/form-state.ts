@@ -6,6 +6,7 @@ export const contactFields = [
   "howWeMet",
   "phone",
   "email",
+  "workplace",
 ] as const;
 
 export type ContactField = (typeof contactFields)[number];

@@ -31,6 +31,7 @@ const emptyValues: ContactValues = {
   howWeMet: "",
   phone: "",
   email: "",
+  workplace: "",
 };
 
 export function ContactForm(props: ContactFormProps) {
@@ -100,6 +101,16 @@ function ContactFormFields({
           <Input {...fieldProps("email")} type="email" autoComplete="off" />
           <FieldError id="email-error" errors={state.errors?.email} />
         </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="workplace">Место работы</Label>
+        <Input
+          {...fieldProps("workplace")}
+          placeholder="Например: Яндекс, отдел маркетинга"
+          autoComplete="off"
+        />
+        <FieldError id="workplace-error" errors={state.errors?.workplace} />
       </div>
 
       {state.message && (

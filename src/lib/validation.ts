@@ -29,6 +29,7 @@ export const contactSchema = z.object({
       "Похоже, в адресе почты ошибка",
     )
     .transform((value) => value || null),
+  workplace: optionalText(200),
 });
 
 export const noteSchema = z.object({
