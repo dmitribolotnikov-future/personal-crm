@@ -20,6 +20,7 @@ export const contacts = pgTable("contacts", {
   howWeMet: text("how_we_met"),
   phone: text("phone"),
   email: text("email"),
+  workplace: text("workplace"),
   ...timestamps,
 });
 

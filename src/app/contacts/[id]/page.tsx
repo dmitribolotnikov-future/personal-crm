@@ -55,6 +55,7 @@ async function ContactDetails({
       value: contact.email,
       href: contact.email && `mailto:${contact.email}`,
     },
+    { label: "Место работы", value: contact.workplace, href: null },
   ].filter((detail) => detail.value);
 
   return (
