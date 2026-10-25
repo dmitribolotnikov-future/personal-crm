@@ -43,6 +43,7 @@ async function EditContactForm({
         phone: contact.phone ?? "",
         email: contact.email ?? "",
         workplace: contact.workplace ?? "",
+        contactFrequency: contact.contactFrequency ?? "",
       }}
       submitLabel="Сохранить"
       cancelHref={`/contacts/${contact.id}`}

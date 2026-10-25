@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isContactFrequency } from "@/lib/keep-in-touch";
+
 // Error messages are shown to the user, so they are in Russian
 
 const MAX_DB_INT = 2147483647;
@@ -30,6 +32,14 @@ export const contactSchema = z.object({
     )
     .transform((value) => value || null),
   workplace: optionalText(200),
+  // The form sends "" for "not set"; anything else must be one of the four choices
+  contactFrequency: z
+    .string()
+    .refine(
+      (value) => value === "" || isContactFrequency(value),
+      "Выберите частоту из списка",
+    )
+    .transform((value) => (isContactFrequency(value) ? value : null)),
 });
 
 export const noteSchema = z.object({

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { ContactBrowser } from "@/components/contact-browser";
+import { OverdueContacts } from "@/components/overdue-contacts";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { listContacts } from "@/lib/data";
@@ -19,6 +20,10 @@ export default function HomePage() {
           Добавить контакт
         </Link>
       </div>
+      {/* Its own Suspense, so the list does not wait for it; empty while loading, since it may not show at all */}
+      <Suspense fallback={null}>
+        <OverdueContacts />
+      </Suspense>
       <Suspense fallback={<ContactListSkeleton />}>
         <Contacts />
       </Suspense>

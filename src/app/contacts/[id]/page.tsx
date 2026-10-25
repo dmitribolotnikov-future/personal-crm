@@ -6,13 +6,20 @@ import { Suspense } from "react";
 import { deleteContact } from "@/app/actions";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { ContactAvatar } from "@/components/contact-avatar";
+import { MarkContactedButton } from "@/components/mark-contacted-button";
 import { NoteForm } from "@/components/note-form";
 import { NoteItem } from "@/components/note-item";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getContact, listNotes } from "@/lib/data";
-import { formatDateTime, phoneHref } from "@/lib/format";
+import { formatCalendarDate, formatDateTime, phoneHref } from "@/lib/format";
+import {
+  formatOverdue,
+  frequencyPhrase,
+  getKeepInTouchState,
+} from "@/lib/keep-in-touch";
+import { cn } from "@/lib/utils";
 import { parseId } from "@/lib/validation";
 
 export default function ContactPage({ params }: PageProps<"/contacts/[id]">) {
@@ -58,6 +65,13 @@ async function ContactDetails({
     { label: "Место работы", value: contact.workplace, href: null },
   ].filter((detail) => detail.value);
 
+  const keepInTouch = getKeepInTouchState({
+    frequency: contact.contactFrequency,
+    // Notes come newest first
+    lastNoteAt: notes[0]?.createdAt ?? null,
+    frequencySetAt: contact.contactFrequencySetAt,
+  });
+
   return (
     <>
       {/* A white card on a powder block, like the contact card on the landing */}
@@ -78,7 +92,7 @@ async function ContactDetails({
             </div>
           </div>
 
-          {details.length > 0 && (
+          {(details.length > 0 || contact.contactFrequency) && (
             <dl className="grid gap-x-6 gap-y-3 text-15 leading-snug md:text-16 sm:grid-cols-[auto_1fr]">
               {details.map((detail) => (
                 <div
@@ -100,6 +114,40 @@ async function ContactDetails({
                   </dd>
                 </div>
               ))}
+
+              {contact.contactFrequency && (
+                <div className="flex flex-col gap-0.5 sm:contents">
+                  <dt className="text-muted">Общаться</dt>
+                  <dd>{frequencyPhrase(contact.contactFrequency)}</dd>
+                </div>
+              )}
+              {keepInTouch && (
+                <div className="flex flex-col gap-0.5 sm:contents">
+                  {/* The first line is as tall as the button, so the label lines up with the text even when the button wraps below */}
+                  <dt className="text-muted sm:flex sm:h-11 sm:items-center">
+                    Срок
+                  </dt>
+                  <dd className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-2 sm:min-h-11",
+                        keepInTouch.overdue && "font-semibold text-accent-ink",
+                      )}
+                    >
+                      {keepInTouch.overdue && (
+                        <span
+                          aria-hidden="true"
+                          className="size-2 shrink-0 rounded-circle bg-accent"
+                        />
+                      )}
+                      {keepInTouch.overdue
+                        ? `Пора связаться · ${formatOverdue(keepInTouch.overdueDays)}`
+                        : `Связаться до ${formatCalendarDate(keepInTouch.dueOn)}`}
+                    </span>
+                    <MarkContactedButton contactId={contact.id} />
+                  </dd>
+                </div>
+              )}
             </dl>
           )}
 

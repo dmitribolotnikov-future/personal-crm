@@ -7,6 +7,8 @@ export const contactFields = [
   "phone",
   "email",
   "workplace",
+  // A ContactFrequency value, or "" for "not set"
+  "contactFrequency",
 ] as const;
 
 export type ContactField = (typeof contactFields)[number];
