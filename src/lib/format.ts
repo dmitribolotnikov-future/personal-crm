@@ -1,3 +1,5 @@
+import type { CalendarDate } from "@/lib/keep-in-touch";
+
 const dateTimeFormat = new Intl.DateTimeFormat("ru-RU", {
   day: "numeric",
   month: "long",
@@ -8,6 +10,17 @@ const dateTimeFormat = new Intl.DateTimeFormat("ru-RU", {
 
 export function formatDateTime(date: Date): string {
   return dateTimeFormat.format(date);
+}
+
+const dayMonthFormat = new Intl.DateTimeFormat("ru-RU", {
+  day: "numeric",
+  month: "long",
+});
+
+// "12 ноября 2026"; the year is added by hand to avoid the trailing "г."
+export function formatCalendarDate({ year, month, day }: CalendarDate): string {
+  // Noon, so a daylight saving jump around midnight cannot move the day
+  return `${dayMonthFormat.format(new Date(year, month - 1, day, 12))} ${year}`;
 }
 
 // Keeps digits and a leading plus so the link works on phones: "+7 (900) 123-45-67" -> "+79001234567"

@@ -14,6 +14,7 @@ import type {
   ContactFormState,
   ContactValues,
 } from "@/lib/form-state";
+import { frequencyPhrase, frequencyValues } from "@/lib/keep-in-touch";
 
 type ContactFormProps = {
   action: (
@@ -34,6 +35,20 @@ const emptyValues: ContactValues = {
   workplace: "",
   contactFrequency: "",
 };
+
+// "раз в месяц" -> "Раз в месяц"
+function capitalize(text: string): string {
+  return text.charAt(0).toLocaleUpperCase("ru") + text.slice(1);
+}
+
+// "" is "not set"; it is first and selected by default
+const frequencyOptions = [
+  { value: "", label: "Не задано" },
+  ...frequencyValues.map((value) => ({
+    value,
+    label: capitalize(frequencyPhrase(value)),
+  })),
+];
 
 export function ContactForm(props: ContactFormProps) {
   const [formKey, setFormKey] = useState(0);
@@ -113,6 +128,38 @@ function ContactFormFields({
         />
         <FieldError id="workplace-error" errors={state.errors?.workplace} />
       </div>
+
+      {/* Real radio inputs, visually hidden: they work with FormData and the keyboard */}
+      <fieldset
+        className="min-w-0"
+        aria-describedby={
+          state.errors?.contactFrequency ? "contactFrequency-error" : undefined
+        }
+      >
+        <legend className="mb-2 text-14 leading-none font-semibold text-ink-soft">
+          Как часто общаться
+        </legend>
+        <div className="flex flex-wrap gap-2">
+          {frequencyOptions.map((option) => (
+            <label key={option.value} className="cursor-pointer">
+              <input
+                type="radio"
+                name="contactFrequency"
+                value={option.value}
+                defaultChecked={values.contactFrequency === option.value}
+                className="peer sr-only"
+              />
+              <span className="inline-flex h-11 items-center rounded-pill bg-gray px-5 text-15 font-semibold text-ink transition-colors select-none hover:bg-avatar-gray peer-checked:bg-ink peer-checked:text-white peer-checked:hover:bg-ink peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-accent">
+                {option.label}
+              </span>
+            </label>
+          ))}
+        </div>
+        <FieldError
+          id="contactFrequency-error"
+          errors={state.errors?.contactFrequency}
+        />
+      </fieldset>
 
       {state.message && (
         <p className="text-14 text-danger" role="alert">

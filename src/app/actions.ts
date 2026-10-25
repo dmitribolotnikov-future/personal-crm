@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -14,6 +14,9 @@ import {
   type NoteFormState,
 } from "@/lib/form-state";
 import { contactSchema, idSchema, noteSchema } from "@/lib/validation";
+
+// Text of the note that the "Связались" button adds
+const CONTACTED_NOTE = "Связались";
 
 function readContactValues(formData: FormData): ContactValues {
   return Object.fromEntries(
@@ -38,7 +41,11 @@ export async function createContact(
 
   const [created] = await getDb()
     .insert(contacts)
-    .values(parsed.data)
+    .values({
+      ...parsed.data,
+      // The countdown starts now if a frequency was chosen
+      contactFrequencySetAt: parsed.data.contactFrequency ? sql`now()` : null,
+    })
     .returning({ id: contacts.id });
 
   revalidateAll();
@@ -57,9 +64,19 @@ export async function updateContact(
     return { values, errors: z.flattenError(parsed.error).fieldErrors };
   }
 
+  // In SET the database still sees the old row, so this compares with the old frequency:
+  // unchanged keeps the old moment, cleared drops it, changed starts the countdown now
+  const newFrequency = sql`${parsed.data.contactFrequency}::text`;
   const updated = await getDb()
     .update(contacts)
-    .set(parsed.data)
+    .set({
+      ...parsed.data,
+      contactFrequencySetAt: sql`case
+        when ${contacts.contactFrequency} is not distinct from ${newFrequency} then ${contacts.contactFrequencySetAt}
+        when ${newFrequency} is null then null
+        else now()
+      end`,
+    })
     .where(eq(contacts.id, id))
     .returning({ id: contacts.id });
   if (updated.length === 0) {
@@ -95,6 +112,21 @@ export async function addNote(
 
   revalidateAll();
   return { ok: true };
+}
+
+// A plain note, so the countdown restarts by the usual rule; stays on the same page
+export async function markContacted(contactId: number) {
+  const id = idSchema.parse(contactId);
+  // Inserted from a select, so nothing is added if the contact was deleted meanwhile
+  // (drizzle's insert().select() wants every column of the table, hence plain SQL)
+  await getDb().execute(sql`
+    insert into ${notes} (${sql.identifier(notes.contactId.name)}, ${sql.identifier(notes.body.name)})
+    select ${contacts.id}, ${CONTACTED_NOTE}::text
+    from ${contacts}
+    where ${contacts.id} = ${id}
+  `);
+
+  revalidateAll();
 }
 
 export async function updateNote(
