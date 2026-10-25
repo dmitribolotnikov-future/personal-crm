@@ -32,6 +32,7 @@ const emptyValues: ContactValues = {
   phone: "",
   email: "",
   workplace: "",
+  contactFrequency: "",
 };
 
 export function ContactForm(props: ContactFormProps) {
