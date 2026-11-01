@@ -85,9 +85,17 @@ async function main() {
       // The app requires a nonempty value; trust authentication ignores it.
       POSTGRES_PASSWORD: "unused",
       E2E_DATABASE_ISOLATED: "1",
+      TZ: "UTC",
       NEXT_TELEMETRY_DISABLED: "1",
     };
 
+    await runNode(
+      [
+        "node_modules/tsx/dist/cli.mjs",
+        "scripts/test-contact-frequency-migration.mts",
+      ],
+      env,
+    );
     await runNode(
       ["node_modules/tsx/dist/cli.mjs", "scripts/migrate.mts"],
       env,
