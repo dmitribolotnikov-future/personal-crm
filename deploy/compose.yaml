@@ -47,7 +47,8 @@ services:
     ports:
       - "127.0.0.1:3000:3000"
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/health"]
+      test:
+        ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/health"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -58,12 +59,22 @@ services:
   migrate:
     <<: *app
     profiles: ["jobs"]
-    command: ["node", "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON", "scripts/migrate.mts"]
+    command:
+      [
+        "node",
+        "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON",
+        "scripts/migrate.mts",
+      ]
 
   seed:
     <<: *app
     profiles: ["jobs"]
-    command: ["node", "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON", "scripts/seed.mts"]
+    command:
+      [
+        "node",
+        "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON",
+        "scripts/seed.mts",
+      ]
 
 volumes:
   db-data:

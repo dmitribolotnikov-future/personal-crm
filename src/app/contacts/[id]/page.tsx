@@ -6,13 +6,14 @@ import { Suspense } from "react";
 import { deleteContact } from "@/app/actions";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { ContactAvatar } from "@/components/contact-avatar";
+import { ContactGroupCreate } from "@/components/contact-group-create";
 import { MarkContactedButton } from "@/components/mark-contacted-button";
 import { NoteForm } from "@/components/note-form";
 import { NoteItem } from "@/components/note-item";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getContact, listNotes } from "@/lib/data";
+import { getContact, listContactGroups, listNotes } from "@/lib/data";
 import { formatCalendarDate, formatDateTime, phoneHref } from "@/lib/format";
 import {
   formatOverdue,
@@ -47,7 +48,11 @@ async function ContactDetails({
   const id = parseId((await params).id);
   if (id === null) notFound();
 
-  const [contact, notes] = await Promise.all([getContact(id), listNotes(id)]);
+  const [contact, notes, groups] = await Promise.all([
+    getContact(id),
+    listNotes(id),
+    listContactGroups(id),
+  ]);
   if (!contact) notFound();
 
   const details = [
@@ -90,6 +95,34 @@ async function ContactDetails({
                 <p className="text-15 text-muted md:text-17">{contact.about}</p>
               )}
             </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <h2 className="text-14 font-semibold text-ink-soft">Группы</h2>
+            <div className="flex flex-wrap items-center gap-2">
+              {groups.length > 0 && (
+                <ul className="contents">
+                  {groups.map((group) => (
+                    <li
+                      key={group.id}
+                      className="inline-flex min-h-11 max-w-full items-center rounded-pill bg-gray px-4 py-2 text-15 break-words"
+                    >
+                      {group.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <ContactGroupCreate contactId={contact.id} />
+            </div>
+            <Link
+              href={`/contacts/${contact.id}/edit#contact-groups-${contact.id}`}
+              className={buttonVariants({
+                variant: "ghost",
+                className: "self-start",
+              })}
+            >
+              Настроить группы
+            </Link>
           </div>
 
           {(details.length > 0 || contact.contactFrequency) && (

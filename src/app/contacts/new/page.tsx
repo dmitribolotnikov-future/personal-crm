@@ -1,5 +1,9 @@
+import { Suspense } from "react";
+
 import { createContact } from "@/app/actions";
 import { ContactForm } from "@/components/contact-form";
+import { Skeleton } from "@/components/ui/skeleton";
+import { listGroups } from "@/lib/data";
 
 export default function NewContactPage() {
   return (
@@ -7,7 +11,21 @@ export default function NewContactPage() {
       <h1 className="text-34 leading-heading font-bold tracking-tight-40 md:text-42 md:tracking-tight-45">
         Новый контакт
       </h1>
-      <ContactForm action={createContact} submitLabel="Добавить" cancelHref="/" />
+      <Suspense fallback={<Skeleton className="h-96 rounded-28" />}>
+        <NewContactForm />
+      </Suspense>
     </div>
+  );
+}
+
+async function NewContactForm() {
+  const groups = await listGroups();
+  return (
+    <ContactForm
+      action={createContact}
+      groups={groups}
+      submitLabel="Добавить"
+      cancelHref="/"
+    />
   );
 }

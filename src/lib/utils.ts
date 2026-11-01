@@ -1,6 +1,6 @@
-import { createCn } from "cn/config"
+import { createCn } from "cn/config";
 
-const isNumber = (value: string) => /^\d+$/.test(value)
+const isNumber = (value: string) => /^\d+$/.test(value);
 
 // cn has to know the token names from tokens.css: otherwise it takes "text-14" for a color
 // and drops it next to "text-ink", or takes "shadow-card" for a shadow color
@@ -14,4 +14,4 @@ export const cn = createCn({
       shadow: ["card", "card-lg", "pill"],
     },
   },
-})
+});

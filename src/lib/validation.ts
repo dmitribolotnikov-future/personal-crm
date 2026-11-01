@@ -1,10 +1,18 @@
 import { z } from "zod";
 
 import { isContactFrequency } from "@/lib/keep-in-touch";
+import { normalizeGroupName } from "@/lib/groups";
 
 // Error messages are shown to the user, so they are in Russian
 
 const MAX_DB_INT = 2147483647;
+
+export const groupSchema = z
+  .object({ name: z.string().trim().min(1, "Укажите название") })
+  .transform(({ name }) => ({
+    name,
+    normalizedName: normalizeGroupName(name),
+  }));
 
 const optionalText = (max: number) =>
   z
@@ -14,6 +22,16 @@ const optionalText = (max: number) =>
     .transform((value) => value || null);
 
 export const contactSchema = z.object({
+  groupIds: z
+    .array(
+      z
+        .string()
+        .refine(
+          (value) => parseId(value) !== null,
+          "Выберите группы из списка",
+        ),
+    )
+    .transform((values) => [...new Set(values.map(Number))]),
   name: z
     .string()
     .trim()

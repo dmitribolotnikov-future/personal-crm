@@ -6,7 +6,7 @@ import { ContactBrowser } from "@/components/contact-browser";
 import { OverdueContacts } from "@/components/overdue-contacts";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { listContacts } from "@/lib/data";
+import { listContacts, listGroups } from "@/lib/data";
 
 export default function HomePage() {
   return (
@@ -15,10 +15,18 @@ export default function HomePage() {
         <h1 className="text-34 leading-heading font-bold tracking-tight-40 md:text-42 md:tracking-tight-45">
           Контакты
         </h1>
-        <Link href="/contacts/new" className={buttonVariants({ size: "lg" })}>
-          <Plus />
-          Добавить контакт
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/groups"
+            className={buttonVariants({ variant: "secondary", size: "lg" })}
+          >
+            Группы
+          </Link>
+          <Link href="/contacts/new" className={buttonVariants({ size: "lg" })}>
+            <Plus />
+            Добавить контакт
+          </Link>
+        </div>
       </div>
       {/* Its own Suspense, so the list does not wait for it; empty while loading, since it may not show at all */}
       <Suspense fallback={null}>
@@ -32,8 +40,8 @@ export default function HomePage() {
 }
 
 async function Contacts() {
-  const contacts = await listContacts();
-  return <ContactBrowser contacts={contacts} />;
+  const [contacts, groups] = await Promise.all([listContacts(), listGroups()]);
+  return <ContactBrowser contacts={contacts} groups={groups} />;
 }
 
 function ContactListSkeleton() {
