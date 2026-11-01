@@ -14,3 +14,5 @@ next-env.d.ts
 .claude
 deploy
 specs
+playwright-report
+test-results
