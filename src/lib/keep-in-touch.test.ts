@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, it } from "vitest";
 
 import {
   formatDays,
@@ -26,54 +26,96 @@ function date(year: number, month: number, day: number) {
 
 describe("nextContactDate", () => {
   it("adds 7 days for a week", () => {
-    assert.deepEqual(nextContactDate(at(2026, 10, 1), "week"), date(2026, 10, 8));
+    assert.deepEqual(
+      nextContactDate(at(2026, 10, 1), "week"),
+      date(2026, 10, 8),
+    );
   });
 
   it("carries a week over the end of the month and the year", () => {
-    assert.deepEqual(nextContactDate(at(2026, 12, 28), "week"), date(2027, 1, 4));
+    assert.deepEqual(
+      nextContactDate(at(2026, 12, 28), "week"),
+      date(2027, 1, 4),
+    );
   });
 
   it("keeps the same day number for a month", () => {
-    assert.deepEqual(nextContactDate(at(2026, 10, 12), "month"), date(2026, 11, 12));
+    assert.deepEqual(
+      nextContactDate(at(2026, 10, 12), "month"),
+      date(2026, 11, 12),
+    );
   });
 
   it("uses the last day of a shorter month", () => {
-    assert.deepEqual(nextContactDate(at(2026, 1, 31), "month"), date(2026, 2, 28));
-    assert.deepEqual(nextContactDate(at(2026, 3, 31), "month"), date(2026, 4, 30));
+    assert.deepEqual(
+      nextContactDate(at(2026, 1, 31), "month"),
+      date(2026, 2, 28),
+    );
+    assert.deepEqual(
+      nextContactDate(at(2026, 3, 31), "month"),
+      date(2026, 4, 30),
+    );
   });
 
   it("carries a month over the end of the year", () => {
-    assert.deepEqual(nextContactDate(at(2026, 12, 31), "month"), date(2027, 1, 31));
+    assert.deepEqual(
+      nextContactDate(at(2026, 12, 31), "month"),
+      date(2027, 1, 31),
+    );
   });
 
   it("adds 3 months for a quarter", () => {
-    assert.deepEqual(nextContactDate(at(2026, 11, 15), "quarter"), date(2027, 2, 15));
+    assert.deepEqual(
+      nextContactDate(at(2026, 11, 15), "quarter"),
+      date(2027, 2, 15),
+    );
   });
 
   it("uses the last day of a shorter month for a quarter", () => {
-    assert.deepEqual(nextContactDate(at(2026, 11, 30), "quarter"), date(2027, 2, 28));
+    assert.deepEqual(
+      nextContactDate(at(2026, 11, 30), "quarter"),
+      date(2027, 2, 28),
+    );
   });
 
   it("adds a year", () => {
-    assert.deepEqual(nextContactDate(at(2026, 10, 24), "year"), date(2027, 10, 24));
+    assert.deepEqual(
+      nextContactDate(at(2026, 10, 24), "year"),
+      date(2027, 10, 24),
+    );
   });
 
   it("moves 29 February to 28 February of a common year", () => {
-    assert.deepEqual(nextContactDate(at(2028, 2, 29), "year"), date(2029, 2, 28));
+    assert.deepEqual(
+      nextContactDate(at(2028, 2, 29), "year"),
+      date(2029, 2, 28),
+    );
   });
 
   it("keeps 29 February when the next year is a leap year too", () => {
-    assert.deepEqual(nextContactDate(at(2028, 2, 29), "month"), date(2028, 3, 29));
+    assert.deepEqual(
+      nextContactDate(at(2028, 2, 29), "month"),
+      date(2028, 3, 29),
+    );
   });
 
   it("goes by the local calendar day, not the time of day", () => {
-    assert.deepEqual(nextContactDate(at(2026, 10, 1, 0, 30), "week"), date(2026, 10, 8));
-    assert.deepEqual(nextContactDate(at(2026, 10, 1, 23, 30), "week"), date(2026, 10, 8));
+    assert.deepEqual(
+      nextContactDate(at(2026, 10, 1, 0, 30), "week"),
+      date(2026, 10, 8),
+    );
+    assert.deepEqual(
+      nextContactDate(at(2026, 10, 1, 23, 30), "week"),
+      date(2026, 10, 8),
+    );
   });
 
   it("is not thrown off by the clocks changing", () => {
     // Clocks went forward on 29 March 2026
-    assert.deepEqual(nextContactDate(at(2026, 3, 25), "week"), date(2026, 4, 1));
+    assert.deepEqual(
+      nextContactDate(at(2026, 3, 25), "week"),
+      date(2026, 4, 1),
+    );
   });
 });
 
@@ -116,7 +158,11 @@ describe("getKeepInTouchState", () => {
 
   it("shows the due date of a contact that is not overdue yet", () => {
     const state = getKeepInTouchState(
-      { frequency: "month", lastNoteAt: at(2026, 10, 12), frequencySetAt: null },
+      {
+        frequency: "month",
+        lastNoteAt: at(2026, 10, 12),
+        frequencySetAt: null,
+      },
       at(2026, 10, 24),
     );
     assert.deepEqual(state, {
@@ -143,7 +189,11 @@ describe("getKeepInTouchState", () => {
 
   it("counts from when the frequency was set if there are no notes", () => {
     const state = getKeepInTouchState(
-      { frequency: "month", lastNoteAt: null, frequencySetAt: at(2026, 10, 24) },
+      {
+        frequency: "month",
+        lastNoteAt: null,
+        frequencySetAt: at(2026, 10, 24),
+      },
       at(2026, 10, 24),
     );
     assert.deepEqual(state, {

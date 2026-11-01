@@ -16,11 +16,16 @@ export default function HomePage() {
           Контакты
         </h1>
         <div className="flex flex-wrap gap-2">
-        <Link href="/groups" className={buttonVariants({ variant: "secondary", size: "lg" })}>Группы</Link>
-        <Link href="/contacts/new" className={buttonVariants({ size: "lg" })}>
-          <Plus />
-          Добавить контакт
-        </Link>
+          <Link
+            href="/groups"
+            className={buttonVariants({ variant: "secondary", size: "lg" })}
+          >
+            Группы
+          </Link>
+          <Link href="/contacts/new" className={buttonVariants({ size: "lg" })}>
+            <Plus />
+            Добавить контакт
+          </Link>
         </div>
       </div>
       {/* Its own Suspense, so the list does not wait for it; empty while loading, since it may not show at all */}

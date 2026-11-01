@@ -23,8 +23,10 @@ export function filterContacts<T extends { name: string; groupIds: number[] }>(
   groupIds: readonly number[],
 ): T[] {
   const search = normalize(query);
-  return contacts.filter((contact) =>
-    (groupIds.length === 0 || groupIds.some((groupId) => contact.groupIds.includes(groupId))) &&
-    normalize(contact.name).includes(search),
+  return contacts.filter(
+    (contact) =>
+      (groupIds.length === 0 ||
+        groupIds.some((groupId) => contact.groupIds.includes(groupId))) &&
+      normalize(contact.name).includes(search),
   );
 }

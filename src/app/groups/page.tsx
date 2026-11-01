@@ -11,8 +11,18 @@ import { listGroups } from "@/lib/data";
 export default function GroupsPage() {
   return (
     <div className="flex flex-col gap-6 md:gap-8">
-      <Link href="/" className={buttonVariants({ variant: "ghost", className: "self-start" })}>Все контакты</Link>
-      <h1 className="text-34 leading-heading font-bold tracking-tight-40 md:text-42 md:tracking-tight-45">Группы</h1>
+      <Link
+        href="/"
+        className={buttonVariants({
+          variant: "ghost",
+          className: "self-start",
+        })}
+      >
+        Все контакты
+      </Link>
+      <h1 className="text-34 leading-heading font-bold tracking-tight-40 md:text-42 md:tracking-tight-45">
+        Группы
+      </h1>
       <GroupForm action={createGroup} create />
       <Suspense fallback={<Skeleton className="h-64 rounded-28" />}>
         <Groups />
@@ -23,11 +33,19 @@ export default function GroupsPage() {
 
 async function Groups() {
   const groups = await listGroups();
-  if (groups.length === 0) return <p className="text-16 text-muted">Групп пока нет. Создайте первую — контакты можно добавить позже.</p>;
+  if (groups.length === 0)
+    return (
+      <p className="text-16 text-muted">
+        Групп пока нет. Создайте первую — контакты можно добавить позже.
+      </p>
+    );
   return (
     <ul className="flex flex-col gap-4">
       {groups.map((group) => (
-        <li key={group.id} className="flex flex-col gap-4 rounded-28 bg-gray p-5 md:p-6">
+        <li
+          key={group.id}
+          className="flex flex-col gap-4 rounded-28 bg-gray p-5 md:p-6"
+        >
           <h2 className="text-20 font-semibold break-words">
             <Link
               href={`/groups/${group.id}`}
@@ -36,7 +54,11 @@ async function Groups() {
               {group.name}
             </Link>
           </h2>
-          <GroupForm key={group.name} action={renameGroup.bind(null, group.id)} name={group.name} />
+          <GroupForm
+            key={group.name}
+            action={renameGroup.bind(null, group.id)}
+            name={group.name}
+          />
           <div>
             <ConfirmDeleteDialog
               title={`Удалить группу «${group.name}»?`}

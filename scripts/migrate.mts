@@ -30,7 +30,9 @@ async function main() {
     const before = await countApplied(pool);
     await migrate(drizzle(pool), { migrationsFolder: "./drizzle" });
     const after = await countApplied(pool);
-    console.log(`Migrations applied: ${after - before} new, ${after} in total.`);
+    console.log(
+      `Migrations applied: ${after - before} new, ${after} in total.`,
+    );
   } finally {
     await pool.end();
   }

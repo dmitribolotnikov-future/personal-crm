@@ -39,7 +39,11 @@ export async function renameGroup(
   _prevState: GroupFormState,
   formData: FormData,
 ): Promise<GroupFormState> {
-  const state = await saveGroup(getDb(), String(formData.get("name") ?? ""), groupId);
+  const state = await saveGroup(
+    getDb(),
+    String(formData.get("name") ?? ""),
+    groupId,
+  );
   if (state.ok) revalidateAll();
   return state;
 }

@@ -48,7 +48,11 @@ async function ContactDetails({
   const id = parseId((await params).id);
   if (id === null) notFound();
 
-  const [contact, notes, groups] = await Promise.all([getContact(id), listNotes(id), listContactGroups(id)]);
+  const [contact, notes, groups] = await Promise.all([
+    getContact(id),
+    listNotes(id),
+    listContactGroups(id),
+  ]);
   if (!contact) notFound();
 
   const details = [
@@ -112,7 +116,10 @@ async function ContactDetails({
             </div>
             <Link
               href={`/contacts/${contact.id}/edit#contact-groups-${contact.id}`}
-              className={buttonVariants({ variant: "ghost", className: "self-start" })}
+              className={buttonVariants({
+                variant: "ghost",
+                className: "self-start",
+              })}
             >
               Настроить группы
             </Link>

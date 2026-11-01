@@ -8,16 +8,27 @@ import { ContactAvatar } from "@/components/contact-avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { ContactSummary, GroupSummary } from "@/lib/data";
-import { filterContacts, getContactFilterGroups, resolveGroupFilters } from "@/lib/contact-filter";
+import {
+  filterContacts,
+  getContactFilterGroups,
+  resolveGroupFilters,
+} from "@/lib/contact-filter";
 
-export function ContactBrowser({ contacts, groups }: { contacts: ContactSummary[]; groups: GroupSummary[] }) {
+export function ContactBrowser({
+  contacts,
+  groups,
+}: {
+  contacts: ContactSummary[];
+  groups: GroupSummary[];
+}) {
   const [query, setQuery] = useState("");
   const [selectedGroupIds, setSelectedGroupIds] = useState<number[]>([]);
   const groupIds = resolveGroupFilters(selectedGroupIds, groups);
   const visible = filterContacts(contacts, query, groupIds);
   const selectedGroups = groups.filter((group) => groupIds.includes(group.id));
   const selectedNames = selectedGroups.map((group) => group.name);
-  const filterLabel = selectedNames.length > 0 ? selectedNames.join(", ") : "Все контакты";
+  const filterLabel =
+    selectedNames.length > 0 ? selectedNames.join(", ") : "Все контакты";
 
   return (
     <div className="flex flex-col gap-4">
@@ -31,7 +42,10 @@ export function ContactBrowser({ contacts, groups }: { contacts: ContactSummary[
             className="flex min-h-12 w-full min-w-0 cursor-pointer list-none items-center justify-between gap-3 rounded-pill border border-line bg-white px-5 py-2 text-16 text-ink focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent [&::-webkit-details-marker]:hidden"
           >
             <span className="min-w-0 truncate">{filterLabel}</span>
-            <ChevronDown aria-hidden="true" className="size-4.5 shrink-0 text-muted transition-transform group-open/filter:rotate-180" />
+            <ChevronDown
+              aria-hidden="true"
+              className="size-4.5 shrink-0 text-muted transition-transform group-open/filter:rotate-180"
+            />
           </summary>
           <fieldset className="mt-2 flex min-w-0 flex-col gap-2 rounded-20 border border-line bg-white p-3">
             <legend className="sr-only">Выбрать группы для фильтра</legend>
@@ -43,7 +57,10 @@ export function ContactBrowser({ contacts, groups }: { contacts: ContactSummary[
             ) : (
               <div className="flex flex-col gap-1">
                 {groups.map((group) => (
-                  <label key={group.id} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-12 px-3 py-2 hover:bg-gray">
+                  <label
+                    key={group.id}
+                    className="flex min-h-11 cursor-pointer items-center gap-3 rounded-12 px-3 py-2 hover:bg-gray"
+                  >
                     <input
                       type="checkbox"
                       checked={groupIds.includes(group.id)}
@@ -58,13 +75,20 @@ export function ContactBrowser({ contacts, groups }: { contacts: ContactSummary[
                       }}
                       className="size-4 shrink-0 accent-ink focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent"
                     />
-                    <span className="min-w-0 text-15 break-words">{group.name}</span>
+                    <span className="min-w-0 text-15 break-words">
+                      {group.name}
+                    </span>
                   </label>
                 ))}
               </div>
             )}
             {groupIds.length > 0 && (
-              <Button type="button" variant="ghost" className="self-start" onClick={() => setSelectedGroupIds([])}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="self-start"
+                onClick={() => setSelectedGroupIds([])}
+              >
                 Все контакты
               </Button>
             )}
@@ -94,43 +118,48 @@ export function ContactBrowser({ contacts, groups }: { contacts: ContactSummary[
       ) : (
         <ul className="flex flex-col gap-0.5 rounded-28 bg-gray p-2 md:rounded-32 md:p-3">
           {visible.map((contact) => {
-            const matchingGroups = getContactFilterGroups(contact.groupIds, selectedGroups);
+            const matchingGroups = getContactFilterGroups(
+              contact.groupIds,
+              selectedGroups,
+            );
             return (
-            <li key={contact.id}>
-              <Link
-                href={`/contacts/${contact.id}`}
-                className="flex items-center gap-3 rounded-20 p-3 transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-accent md:rounded-24 md:p-3.5"
-              >
-                <ContactAvatar
-                  name={contact.name}
-                  className="size-10 text-14 md:size-11 md:text-15"
-                />
-                <span className="flex min-w-0 flex-col gap-0.5">
-                  <span className="text-16 font-semibold md:text-17">
-                    {contact.name}
-                  </span>
-                  {contact.about && (
-                    <span className="text-14 text-muted">{contact.about}</span>
-                  )}
-                  {matchingGroups.length > 0 && (
-                    <span
-                      role="group"
-                      aria-label="Выбранные группы контакта"
-                      className="mt-1 flex flex-wrap gap-1"
-                    >
-                      {matchingGroups.map((group) => (
-                        <span
-                          key={group.id}
-                          className="max-w-full rounded-pill bg-white px-2.5 py-1 text-12 font-medium break-words text-ink-soft"
-                        >
-                          {group.name}
-                        </span>
-                      ))}
+              <li key={contact.id}>
+                <Link
+                  href={`/contacts/${contact.id}`}
+                  className="flex items-center gap-3 rounded-20 p-3 transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-accent md:rounded-24 md:p-3.5"
+                >
+                  <ContactAvatar
+                    name={contact.name}
+                    className="size-10 text-14 md:size-11 md:text-15"
+                  />
+                  <span className="flex min-w-0 flex-col gap-0.5">
+                    <span className="text-16 font-semibold md:text-17">
+                      {contact.name}
                     </span>
-                  )}
-                </span>
-              </Link>
-            </li>
+                    {contact.about && (
+                      <span className="text-14 text-muted">
+                        {contact.about}
+                      </span>
+                    )}
+                    {matchingGroups.length > 0 && (
+                      <span
+                        role="group"
+                        aria-label="Выбранные группы контакта"
+                        className="mt-1 flex flex-wrap gap-1"
+                      >
+                        {matchingGroups.map((group) => (
+                          <span
+                            key={group.id}
+                            className="max-w-full rounded-pill bg-white px-2.5 py-1 text-12 font-medium break-words text-ink-soft"
+                          >
+                            {group.name}
+                          </span>
+                        ))}
+                      </span>
+                    )}
+                  </span>
+                </Link>
+              </li>
             );
           })}
         </ul>

@@ -66,7 +66,9 @@ export async function saveContact(
               .insert(contacts)
               .values({
                 ...fields,
-                contactFrequencySetAt: fields.contactFrequency ? sql`now()` : null,
+                contactFrequencySetAt: fields.contactFrequency
+                  ? sql`now()`
+                  : null,
               })
               .returning({ id: contacts.id })
           : await tx
@@ -91,7 +93,9 @@ export async function saveContact(
       if (groupIds.length > 0) {
         await tx
           .insert(contactGroupMemberships)
-          .values(groupIds.map((groupId) => ({ contactId: saved.id, groupId })));
+          .values(
+            groupIds.map((groupId) => ({ contactId: saved.id, groupId })),
+          );
       }
       return { id: saved.id };
     });

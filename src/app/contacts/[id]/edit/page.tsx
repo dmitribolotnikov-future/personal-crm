@@ -30,7 +30,11 @@ async function EditContactForm({
   const id = parseId((await params).id);
   if (id === null) notFound();
 
-  const [contact, groups, selectedGroups] = await Promise.all([getContact(id), listGroups(), listContactGroups(id)]);
+  const [contact, groups, selectedGroups] = await Promise.all([
+    getContact(id),
+    listGroups(),
+    listContactGroups(id),
+  ]);
   if (!contact) notFound();
 
   return (

@@ -1,7 +1,14 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { startTransition, useActionState, useId, useLayoutEffect, useRef, useState } from "react";
+import {
+  startTransition,
+  useActionState,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useFormStatus } from "react-dom";
 
 import { createContactGroup } from "@/app/actions";
@@ -18,7 +25,11 @@ type ContactGroupCreateProps = {
   onPendingChange?: (pending: boolean) => void;
 };
 
-export function ContactGroupCreate({ contactId, onCreated, onPendingChange }: ContactGroupCreateProps) {
+export function ContactGroupCreate({
+  contactId,
+  onCreated,
+  onPendingChange,
+}: ContactGroupCreateProps) {
   const [open, setOpen] = useState(false);
   const { pending: contactSaving } = useFormStatus();
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -60,7 +71,13 @@ export function ContactGroupCreate({ contactId, onCreated, onPendingChange }: Co
   );
 }
 
-function CreateGroupFields({ contactId, onClose, onCreated, onPendingChange, disabled }: ContactGroupCreateProps & {
+function CreateGroupFields({
+  contactId,
+  onClose,
+  onCreated,
+  onPendingChange,
+  disabled,
+}: ContactGroupCreateProps & {
   onClose: () => void;
   disabled: boolean;
 }) {
@@ -73,7 +90,10 @@ function CreateGroupFields({ contactId, onClose, onCreated, onPendingChange, dis
       try {
         const result = await createContactGroup(contactId, previous, formData);
         if (result.ok && result.groupId !== undefined) {
-          onCreated?.({ id: result.groupId, name: String(formData.get("name") ?? "").trim() });
+          onCreated?.({
+            id: result.groupId,
+            name: String(formData.get("name") ?? "").trim(),
+          });
           onClose();
         }
         return result;
@@ -111,7 +131,9 @@ function CreateGroupFields({ contactId, onClose, onCreated, onPendingChange, dis
         }
       }}
     >
-      <Label htmlFor={inputId} className="sr-only">Название новой группы</Label>
+      <Label htmlFor={inputId} className="sr-only">
+        Название новой группы
+      </Label>
       <div className="flex flex-wrap gap-2">
         <Input
           ref={inputRef}
@@ -128,7 +150,12 @@ function CreateGroupFields({ contactId, onClose, onCreated, onPendingChange, dis
         <Button type="button" disabled={pending || disabled} onClick={submit}>
           {pending ? "Создаю…" : "Создать"}
         </Button>
-        <Button type="button" variant="ghost" disabled={pending || disabled} onClick={onClose}>
+        <Button
+          type="button"
+          variant="ghost"
+          disabled={pending || disabled}
+          onClick={onClose}
+        >
           Отмена
         </Button>
       </div>

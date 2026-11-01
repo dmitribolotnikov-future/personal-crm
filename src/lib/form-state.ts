@@ -12,14 +12,18 @@ export const contactFields = [
 ] as const;
 
 export type ContactField = (typeof contactFields)[number];
-export type ContactValues = Record<ContactField, string> & { groupIds: string[] };
+export type ContactValues = Record<ContactField, string> & {
+  groupIds: string[];
+};
 
 export function readContactValues(formData: FormData): ContactValues {
   return {
-    ...Object.fromEntries(
+    ...(Object.fromEntries(
       contactFields.map((field) => [field, String(formData.get(field) ?? "")]),
-    ) as Record<ContactField, string>,
-    groupIds: formData.getAll("groupIds").map((value) => typeof value === "string" ? value : ""),
+    ) as Record<ContactField, string>),
+    groupIds: formData
+      .getAll("groupIds")
+      .map((value) => (typeof value === "string" ? value : "")),
   };
 }
 

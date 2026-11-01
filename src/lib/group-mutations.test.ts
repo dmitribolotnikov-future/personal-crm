@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 
 import { saveGroup } from "./group-mutations";
 import type { getDb } from "../db";
 
-function database({ existingId, failure }: { existingId?: number; failure?: unknown } = {}) {
+function database({
+  existingId,
+  failure,
+}: { existingId?: number; failure?: unknown } = {}) {
   const writes: unknown[] = [];
   const result = async (value: unknown) => {
     if (failure) throw failure;
@@ -12,9 +15,19 @@ function database({ existingId, failure }: { existingId?: number; failure?: unkn
     return [{ id: 1 }];
   };
   const db = {
-    select: () => ({ from: () => ({ where: async () => existingId ? [{ id: existingId }] : [] }) }),
-    insert: () => ({ values: (value: unknown) => ({ returning: () => result(value) }) }),
-    update: () => ({ set: (value: unknown) => ({ where: () => ({ returning: () => result(value) }) }) }),
+    select: () => ({
+      from: () => ({
+        where: async () => (existingId ? [{ id: existingId }] : []),
+      }),
+    }),
+    insert: () => ({
+      values: (value: unknown) => ({ returning: () => result(value) }),
+    }),
+    update: () => ({
+      set: (value: unknown) => ({
+        where: () => ({ returning: () => result(value) }),
+      }),
+    }),
   } as unknown as ReturnType<typeof getDb>;
   return { db, writes };
 }
@@ -45,13 +58,21 @@ test("empty input is returned without a database write", async () => {
 
 test("only the group name unique constraint becomes a form error, including wrapped pg errors", async () => {
   for (const wrapped of [false, true]) {
-    const unique = { code: "23505", constraint: "contact_groups_normalized_name_unique" };
-    const { db } = database({ failure: wrapped ? new Error("Query failed", { cause: unique }) : unique });
+    const unique = {
+      code: "23505",
+      constraint: "contact_groups_normalized_name_unique",
+    };
+    const { db } = database({
+      failure: wrapped ? new Error("Query failed", { cause: unique }) : unique,
+    });
     const state = await saveGroup(db, "Друзья");
     assert.equal(state.name, "Друзья");
     assert.deepEqual(state.errors, ["Группа с таким названием уже есть"]);
   }
-  for (const failure of [new Error("Offline"), { code: "23505", constraint: "other_unique" }]) {
+  for (const failure of [
+    new Error("Offline"),
+    { code: "23505", constraint: "other_unique" },
+  ]) {
     const { db } = database({ failure });
     await assert.rejects(saveGroup(db, "Друзья"), (error) => error === failure);
   }

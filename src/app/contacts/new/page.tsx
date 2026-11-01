@@ -20,5 +20,12 @@ export default function NewContactPage() {
 
 async function NewContactForm() {
   const groups = await listGroups();
-  return <ContactForm action={createContact} groups={groups} submitLabel="Добавить" cancelHref="/" />;
+  return (
+    <ContactForm
+      action={createContact}
+      groups={groups}
+      submitLabel="Добавить"
+      cancelHref="/"
+    />
+  );
 }

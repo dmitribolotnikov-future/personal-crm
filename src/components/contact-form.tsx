@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useId, useLayoutEffect, useRef, useState } from "react";
+import {
+  useActionState,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { FieldError } from "@/components/field-error";
 import { ContactGroupCreate } from "@/components/contact-group-create";
@@ -86,12 +92,16 @@ function ContactFormFields({
   contactId,
 }: ContactFormProps) {
   const [state, formAction, pending] = useActionState(action, {});
-  const [selectedGroupIds, setSelectedGroupIds] = useState(defaultValues.groupIds);
+  const [selectedGroupIds, setSelectedGroupIds] = useState(
+    defaultValues.groupIds,
+  );
   const [createdGroups, setCreatedGroups] = useState<GroupSummary[]>([]);
   const [creatingGroup, setCreatingGroup] = useState(false);
   const availableGroups = [
     ...groups,
-    ...createdGroups.filter((created) => !groups.some((group) => group.id === created.id)),
+    ...createdGroups.filter(
+      (created) => !groups.some((group) => group.id === created.id),
+    ),
   ];
   const values = state.values ?? defaultValues;
   const formId = useId();
@@ -107,7 +117,8 @@ function ContactFormFields({
     return () => window.removeEventListener("hashchange", scrollToGroups);
   }, [groupsSectionId]);
   const fieldId = (field: ContactField | "groupIds") => `${formId}-${field}`;
-  const errorId = (field: ContactField | "groupIds") => `${fieldId(field)}-error`;
+  const errorId = (field: ContactField | "groupIds") =>
+    `${fieldId(field)}-error`;
 
   const fieldProps = (field: ContactField) => ({
     id: fieldId(field),
@@ -166,14 +177,19 @@ function ContactFormFields({
           placeholder="Например: Яндекс, отдел маркетинга"
           autoComplete="off"
         />
-        <FieldError id={errorId("workplace")} errors={state.errors?.workplace} />
+        <FieldError
+          id={errorId("workplace")}
+          errors={state.errors?.workplace}
+        />
       </div>
 
       {/* Real radio inputs, visually hidden: they work with FormData and the keyboard */}
       <fieldset
         className="min-w-0"
         aria-describedby={
-          state.errors?.contactFrequency ? errorId("contactFrequency") : undefined
+          state.errors?.contactFrequency
+            ? errorId("contactFrequency")
+            : undefined
         }
       >
         <legend className="mb-2 text-14 leading-none font-semibold text-ink-soft">
@@ -201,44 +217,76 @@ function ContactFormFields({
         />
       </fieldset>
 
-      <fieldset id={groupsSectionId} ref={groupsRef} className="min-w-0 scroll-mt-6" aria-describedby={state.errors?.groupIds ? errorId("groupIds") : undefined}>
-        <legend className="mb-2 text-14 leading-none font-semibold text-ink-soft">Группы</legend>
+      <fieldset
+        id={groupsSectionId}
+        ref={groupsRef}
+        className="min-w-0 scroll-mt-6"
+        aria-describedby={
+          state.errors?.groupIds ? errorId("groupIds") : undefined
+        }
+      >
+        <legend className="mb-2 text-14 leading-none font-semibold text-ink-soft">
+          Группы
+        </legend>
         {availableGroups.length === 0 && (
           <p className="text-15 text-muted">
-            {contactId === undefined ? <>Групп пока нет. Создайте их на странице <Link href="/groups" className="underline underline-offset-4">«Группы»</Link>.</> : "Групп пока нет. Нажмите «+», чтобы создать первую."}
+            {contactId === undefined ? (
+              <>
+                Групп пока нет. Создайте их на странице{" "}
+                <Link href="/groups" className="underline underline-offset-4">
+                  «Группы»
+                </Link>
+                .
+              </>
+            ) : (
+              "Групп пока нет. Нажмите «+», чтобы создать первую."
+            )}
           </p>
         )}
-          <div className="flex flex-wrap gap-2">
-            {availableGroups.map((group) => (
-              <label key={group.id} className="max-w-full cursor-pointer">
-                <input
-                  type="checkbox" name="groupIds" value={group.id}
-                  checked={selectedGroupIds.includes(String(group.id))}
-                  onChange={(event) => {
-                    const id = String(group.id);
-                    const checked = event.target.checked;
-                    setSelectedGroupIds((current) => checked ? [...current, id] : current.filter((value) => value !== id));
-                  }}
-                  aria-invalid={state.errors?.groupIds ? true : undefined}
-                  aria-describedby={state.errors?.groupIds ? errorId("groupIds") : undefined}
-                  className="peer sr-only"
-                />
-                <span className="inline-flex min-h-11 max-w-full items-center rounded-pill bg-gray px-5 py-2 text-15 font-semibold break-words text-ink transition-colors select-none hover:bg-avatar-gray peer-checked:bg-ink peer-checked:text-white peer-checked:hover:bg-ink peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-accent">
-                  {group.name}
-                </span>
-              </label>
-            ))}
-            {contactId !== undefined && (
-              <ContactGroupCreate
-                contactId={contactId}
-                onPendingChange={setCreatingGroup}
-                onCreated={(group) => {
-                  setCreatedGroups((current) => [...current.filter((value) => value.id !== group.id), group]);
-                  setSelectedGroupIds((current) => [...new Set([...current, String(group.id)])]);
+        <div className="flex flex-wrap gap-2">
+          {availableGroups.map((group) => (
+            <label key={group.id} className="max-w-full cursor-pointer">
+              <input
+                type="checkbox"
+                name="groupIds"
+                value={group.id}
+                checked={selectedGroupIds.includes(String(group.id))}
+                onChange={(event) => {
+                  const id = String(group.id);
+                  const checked = event.target.checked;
+                  setSelectedGroupIds((current) =>
+                    checked
+                      ? [...current, id]
+                      : current.filter((value) => value !== id),
+                  );
                 }}
+                aria-invalid={state.errors?.groupIds ? true : undefined}
+                aria-describedby={
+                  state.errors?.groupIds ? errorId("groupIds") : undefined
+                }
+                className="peer sr-only"
               />
-            )}
-          </div>
+              <span className="inline-flex min-h-11 max-w-full items-center rounded-pill bg-gray px-5 py-2 text-15 font-semibold break-words text-ink transition-colors select-none hover:bg-avatar-gray peer-checked:bg-ink peer-checked:text-white peer-checked:hover:bg-ink peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-accent">
+                {group.name}
+              </span>
+            </label>
+          ))}
+          {contactId !== undefined && (
+            <ContactGroupCreate
+              contactId={contactId}
+              onPendingChange={setCreatingGroup}
+              onCreated={(group) => {
+                setCreatedGroups((current) => [
+                  ...current.filter((value) => value.id !== group.id),
+                  group,
+                ]);
+                setSelectedGroupIds((current) => [
+                  ...new Set([...current, String(group.id)]),
+                ]);
+              }}
+            />
+          )}
+        </div>
         <FieldError id={errorId("groupIds")} errors={state.errors?.groupIds} />
       </fieldset>
 
@@ -249,7 +297,11 @@ function ContactFormFields({
       )}
 
       <div className="flex flex-wrap gap-2 pt-1">
-        <SubmitButton size="lg" pendingLabel="Сохраняю…" disabled={pending || creatingGroup}>
+        <SubmitButton
+          size="lg"
+          pendingLabel="Сохраняю…"
+          disabled={pending || creatingGroup}
+        >
           {submitLabel}
         </SubmitButton>
         <Link

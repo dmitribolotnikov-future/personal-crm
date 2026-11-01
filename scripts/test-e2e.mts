@@ -25,12 +25,21 @@ async function main() {
     // Trust authentication is restricted to a disposable database on localhost.
     // No local .env file or persistent Docker volume is used by this runner.
     await exec("docker", [
-      "run", "--detach", "--rm", "--name", containerName,
-      "--publish", "127.0.0.1::5432",
-      "--mount", "type=tmpfs,destination=/var/lib/postgresql",
-      "--env", "POSTGRES_HOST_AUTH_METHOD=trust",
-      "--env", "POSTGRES_USER=crm_e2e",
-      "--env", "POSTGRES_DB=crm_e2e",
+      "run",
+      "--detach",
+      "--rm",
+      "--name",
+      containerName,
+      "--publish",
+      "127.0.0.1::5432",
+      "--mount",
+      "type=tmpfs,destination=/var/lib/postgresql",
+      "--env",
+      "POSTGRES_HOST_AUTH_METHOD=trust",
+      "--env",
+      "POSTGRES_USER=crm_e2e",
+      "--env",
+      "POSTGRES_DB=crm_e2e",
       "postgres:18",
     ]);
     databaseStarted = true;
@@ -38,18 +47,34 @@ async function main() {
     let ready = false;
     for (let attempt = 0; attempt < 60; attempt++) {
       try {
-        await exec("docker", ["exec", containerName, "pg_isready", "-h", "127.0.0.1", "-U", "crm_e2e", "-d", "crm_e2e"]);
+        await exec("docker", [
+          "exec",
+          containerName,
+          "pg_isready",
+          "-h",
+          "127.0.0.1",
+          "-U",
+          "crm_e2e",
+          "-d",
+          "crm_e2e",
+        ]);
         ready = true;
         break;
       } catch {
         await setTimeout(1_000);
       }
     }
-    if (!ready) throw new Error("The isolated PostgreSQL database did not become ready.");
+    if (!ready)
+      throw new Error("The isolated PostgreSQL database did not become ready.");
 
-    const { stdout } = await exec("docker", ["port", containerName, "5432/tcp"]);
+    const { stdout } = await exec("docker", [
+      "port",
+      containerName,
+      "5432/tcp",
+    ]);
     const port = stdout.trim().match(/^127\.0\.0\.1:(\d+)$/)?.[1];
-    if (!port) throw new Error("Cannot determine the isolated PostgreSQL port.");
+    if (!port)
+      throw new Error("Cannot determine the isolated PostgreSQL port.");
 
     const env = {
       ...process.env,
@@ -63,13 +88,25 @@ async function main() {
       NEXT_TELEMETRY_DISABLED: "1",
     };
 
-    await runNode(["node_modules/tsx/dist/cli.mjs", "scripts/migrate.mts"], env);
+    await runNode(
+      ["node_modules/tsx/dist/cli.mjs", "scripts/migrate.mts"],
+      env,
+    );
     await runNode(["node_modules/next/dist/bin/next", "build"], env);
-    await cp(".next/static", ".next/standalone/.next/static", { recursive: true });
+    await cp(".next/static", ".next/standalone/.next/static", {
+      recursive: true,
+    });
     if (existsSync("public")) {
       await cp("public", ".next/standalone/public", { recursive: true });
     }
-    await runNode(["node_modules/@playwright/test/cli.js", "test", ...process.argv.slice(2)], env);
+    await runNode(
+      [
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        ...process.argv.slice(2),
+      ],
+      env,
+    );
   } finally {
     if (databaseStarted) {
       await exec("docker", ["stop", "--time", "5", containerName]);
