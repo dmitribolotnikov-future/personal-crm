@@ -4,17 +4,62 @@ import { asc, desc, eq, isNotNull, max } from "drizzle-orm";
 import { connection } from "next/server";
 
 import { getDb } from "@/db";
-import { contacts, notes } from "@/db/schema";
+import { contactGroupMemberships, contactGroups, contacts, notes } from "@/db/schema";
 import { getKeepInTouchState } from "@/lib/keep-in-touch";
 
 // Each read calls connection() so it runs per request and never at build time
 
-export async function listContacts() {
+export async function listGroups() {
+  await connection();
+  return getDb().select({ id: contactGroups.id, name: contactGroups.name })
+    .from(contactGroups).orderBy(asc(contactGroups.name), asc(contactGroups.id));
+}
+
+export type GroupSummary = Awaited<ReturnType<typeof listGroups>>[number];
+
+export async function getGroup(id: number) {
+  await connection();
+  const [group] = await getDb()
+    .select({ id: contactGroups.id, name: contactGroups.name })
+    .from(contactGroups)
+    .where(eq(contactGroups.id, id));
+  return group ?? null;
+}
+
+export async function listGroupContacts(groupId: number) {
   await connection();
   return getDb()
     .select({ id: contacts.id, name: contacts.name, about: contacts.about })
     .from(contacts)
+    .innerJoin(contactGroupMemberships, eq(contacts.id, contactGroupMemberships.contactId))
+    .where(eq(contactGroupMemberships.groupId, groupId))
     .orderBy(asc(contacts.name), asc(contacts.id));
+}
+
+export async function listContacts() {
+  await connection();
+  const [rows, memberships] = await Promise.all([getDb()
+    .select({ id: contacts.id, name: contacts.name, about: contacts.about })
+    .from(contacts)
+    .orderBy(asc(contacts.name), asc(contacts.id)),
+    getDb().select().from(contactGroupMemberships),
+  ]);
+  const groupIds = new Map<number, number[]>();
+  for (const membership of memberships) {
+    const ids = groupIds.get(membership.contactId) ?? [];
+    ids.push(membership.groupId);
+    groupIds.set(membership.contactId, ids);
+  }
+  return rows.map((contact) => ({ ...contact, groupIds: groupIds.get(contact.id) ?? [] }));
+}
+
+export async function listContactGroups(contactId: number) {
+  await connection();
+  return getDb().select({ id: contactGroups.id, name: contactGroups.name })
+    .from(contactGroups)
+    .innerJoin(contactGroupMemberships, eq(contactGroups.id, contactGroupMemberships.groupId))
+    .where(eq(contactGroupMemberships.contactId, contactId))
+    .orderBy(asc(contactGroups.name), asc(contactGroups.id));
 }
 
 export type ContactSummary = Awaited<ReturnType<typeof listContacts>>[number];

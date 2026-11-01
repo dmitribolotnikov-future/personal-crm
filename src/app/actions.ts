@@ -6,27 +6,63 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { getDb } from "@/db";
-import { contacts, notes } from "@/db/schema";
+import { contactGroups, contacts, notes } from "@/db/schema";
 import {
-  contactFields,
+  readContactValues,
   type ContactFormState,
-  type ContactValues,
+  type GroupFormState,
   type NoteFormState,
 } from "@/lib/form-state";
-import { contactSchema, idSchema, noteSchema } from "@/lib/validation";
+import { idSchema, noteSchema } from "@/lib/validation";
+import { createGroupForContact, saveGroup } from "@/lib/group-mutations";
+import { saveContact } from "@/lib/contact-mutations";
 
 // Text of the note that the "Связались" button adds
 const CONTACTED_NOTE = "Связались";
 
-function readContactValues(formData: FormData): ContactValues {
-  return Object.fromEntries(
-    contactFields.map((field) => [field, String(formData.get(field) ?? "")]),
-  ) as ContactValues;
-}
-
 // Mark every page stale so lists and cards show the change on the next visit
 function revalidateAll() {
   revalidatePath("/", "layout");
+}
+
+export async function createGroup(
+  _prevState: GroupFormState,
+  formData: FormData,
+): Promise<GroupFormState> {
+  const state = await saveGroup(getDb(), String(formData.get("name") ?? ""));
+  if (state.ok) revalidateAll();
+  return state;
+}
+
+export async function renameGroup(
+  groupId: number,
+  _prevState: GroupFormState,
+  formData: FormData,
+): Promise<GroupFormState> {
+  const state = await saveGroup(getDb(), String(formData.get("name") ?? ""), groupId);
+  if (state.ok) revalidateAll();
+  return state;
+}
+
+export async function createContactGroup(
+  contactId: number,
+  _prevState: GroupFormState,
+  formData: FormData,
+): Promise<GroupFormState> {
+  const state = await createGroupForContact(
+    getDb(),
+    contactId,
+    String(formData.get("name") ?? ""),
+  );
+  if (state.ok) revalidateAll();
+  return state;
+}
+
+export async function deleteGroup(groupId: number) {
+  const id = idSchema.parse(groupId);
+  await getDb().delete(contactGroups).where(eq(contactGroups.id, id));
+  revalidateAll();
+  redirect("/groups");
 }
 
 export async function createContact(
@@ -34,22 +70,11 @@ export async function createContact(
   formData: FormData,
 ): Promise<ContactFormState> {
   const values = readContactValues(formData);
-  const parsed = contactSchema.safeParse(values);
-  if (!parsed.success) {
-    return { values, errors: z.flattenError(parsed.error).fieldErrors };
-  }
-
-  const [created] = await getDb()
-    .insert(contacts)
-    .values({
-      ...parsed.data,
-      // The countdown starts now if a frequency was chosen
-      contactFrequencySetAt: parsed.data.contactFrequency ? sql`now()` : null,
-    })
-    .returning({ id: contacts.id });
+  const result = await saveContact(getDb(), values);
+  if (!("id" in result)) return result;
 
   revalidateAll();
-  redirect(`/contacts/${created.id}`);
+  redirect(`/contacts/${result.id}`);
 }
 
 export async function updateContact(
@@ -59,29 +84,8 @@ export async function updateContact(
 ): Promise<ContactFormState> {
   const id = idSchema.parse(contactId);
   const values = readContactValues(formData);
-  const parsed = contactSchema.safeParse(values);
-  if (!parsed.success) {
-    return { values, errors: z.flattenError(parsed.error).fieldErrors };
-  }
-
-  // In SET the database still sees the old row, so this compares with the old frequency:
-  // unchanged keeps the old moment, cleared drops it, changed starts the countdown now
-  const newFrequency = sql`${parsed.data.contactFrequency}::text`;
-  const updated = await getDb()
-    .update(contacts)
-    .set({
-      ...parsed.data,
-      contactFrequencySetAt: sql`case
-        when ${contacts.contactFrequency} is not distinct from ${newFrequency} then ${contacts.contactFrequencySetAt}
-        when ${newFrequency} is null then null
-        else now()
-      end`,
-    })
-    .where(eq(contacts.id, id))
-    .returning({ id: contacts.id });
-  if (updated.length === 0) {
-    return { values, message: "Контакт не найден: возможно, его уже удалили" };
-  }
+  const result = await saveContact(getDb(), values, id);
+  if (!("id" in result)) return result;
 
   revalidateAll();
   redirect(`/contacts/${id}`);

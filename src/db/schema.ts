@@ -4,6 +4,7 @@ import {
   index,
   integer,
   pgTable,
+  primaryKey,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
@@ -66,3 +67,36 @@ export const notes = pgTable(
 
 export type Contact = typeof contacts.$inferSelect;
 export type Note = typeof notes.$inferSelect;
+
+export const contactGroups = pgTable(
+  "contact_groups",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    name: text("name").notNull(),
+    normalizedName: text("normalized_name")
+      .notNull()
+      .unique("contact_groups_normalized_name_unique"),
+    ...timestamps,
+  },
+  (table) => [
+    check("contact_groups_name_check", sql`length(btrim(${table.name})) > 0`),
+  ],
+);
+
+export const contactGroupMemberships = pgTable(
+  "contact_group_memberships",
+  {
+    contactId: integer("contact_id")
+      .notNull()
+      .references(() => contacts.id, { onDelete: "cascade" }),
+    groupId: integer("group_id")
+      .notNull()
+      .references(() => contactGroups.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.contactId, table.groupId] }),
+    index("contact_group_memberships_group_id_idx").on(table.groupId),
+  ],
+);
+
+export type ContactGroup = typeof contactGroups.$inferSelect;

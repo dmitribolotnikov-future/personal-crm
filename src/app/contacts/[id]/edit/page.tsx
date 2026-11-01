@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { updateContact } from "@/app/actions";
 import { ContactForm } from "@/components/contact-form";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getContact } from "@/lib/data";
+import { getContact, listContactGroups, listGroups } from "@/lib/data";
 import { parseId } from "@/lib/validation";
 
 export default function EditContactPage({
@@ -30,12 +30,15 @@ async function EditContactForm({
   const id = parseId((await params).id);
   if (id === null) notFound();
 
-  const contact = await getContact(id);
+  const [contact, groups, selectedGroups] = await Promise.all([getContact(id), listGroups(), listContactGroups(id)]);
   if (!contact) notFound();
 
   return (
     <ContactForm
       action={updateContact.bind(null, contact.id)}
+      contactId={contact.id}
+      groups={groups}
+      groupsSectionId={`contact-groups-${contact.id}`}
       defaultValues={{
         name: contact.name,
         about: contact.about ?? "",
@@ -44,6 +47,7 @@ async function EditContactForm({
         email: contact.email ?? "",
         workplace: contact.workplace ?? "",
         contactFrequency: contact.contactFrequency ?? "",
+        groupIds: selectedGroups.map((group) => String(group.id)),
       }}
       submitLabel="Сохранить"
       cancelHref={`/contacts/${contact.id}`}
