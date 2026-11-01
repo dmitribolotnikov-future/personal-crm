@@ -228,6 +228,64 @@ describe("getKeepInTouchState", () => {
   });
 });
 
+describe("countdown changes", () => {
+  const now = at(2026, 10, 24);
+  const contact = {
+    frequency: "week" as const,
+    lastNoteAt: at(2026, 10, 1),
+    frequencySetAt: at(2026, 9, 1),
+  };
+
+  it("a new conversation note clears overdue and restarts the countdown", () => {
+    assert.equal(getKeepInTouchState(contact, now)?.overdue, true);
+    assert.deepEqual(
+      getKeepInTouchState({ ...contact, lastNoteAt: now }, now),
+      {
+        dueOn: date(2026, 10, 31),
+        overdue: false,
+        overdueDays: 0,
+      },
+    );
+  });
+
+  it("removing the newest note restores the previous countdown", () => {
+    assert.equal(
+      getKeepInTouchState({ ...contact, lastNoteAt: now }, now)?.overdue,
+      false,
+    );
+    assert.deepEqual(getKeepInTouchState(contact, now), {
+      dueOn: date(2026, 10, 8),
+      overdue: true,
+      overdueDays: 16,
+    });
+  });
+
+  it("removing all notes falls back to when the frequency was set", () => {
+    assert.deepEqual(
+      getKeepInTouchState({ ...contact, lastNoteAt: null }, now),
+      {
+        dueOn: date(2026, 9, 8),
+        overdue: true,
+        overdueDays: 46,
+      },
+    );
+  });
+
+  it("a changed frequency without notes counts from the new setting date", () => {
+    assert.deepEqual(
+      getKeepInTouchState(
+        { frequency: "month", lastNoteAt: null, frequencySetAt: now },
+        now,
+      ),
+      {
+        dueOn: date(2026, 11, 24),
+        overdue: false,
+        overdueDays: 0,
+      },
+    );
+  });
+});
+
 describe("formatDays", () => {
   const cases: [number, string][] = [
     [1, "1 день"],

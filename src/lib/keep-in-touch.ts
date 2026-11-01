@@ -112,6 +112,36 @@ export function getKeepInTouchState(
   return { dueOn, overdue: overdueDays > 0, overdueDays };
 }
 
+type KeepInTouchRow = {
+  id: number;
+  name: string;
+  contactFrequency: ContactFrequency | null;
+  contactFrequencySetAt: Date | null;
+  lastNoteAt: Date | null;
+};
+
+// Rows arrive in database name/id order. Stable sorting preserves that order on ties.
+export function selectOverdueContacts(
+  rows: readonly KeepInTouchRow[],
+  now: Date,
+) {
+  return rows
+    .flatMap((row) => {
+      const state = getKeepInTouchState(
+        {
+          frequency: row.contactFrequency,
+          lastNoteAt: row.lastNoteAt,
+          frequencySetAt: row.contactFrequencySetAt,
+        },
+        now,
+      );
+      return state?.overdue
+        ? [{ id: row.id, name: row.name, overdueDays: state.overdueDays }]
+        : [];
+    })
+    .sort((a, b) => b.overdueDays - a.overdueDays);
+}
+
 // "1 день", "2 дня", "5 дней", "21 день", "11 дней"
 export function formatDays(count: number): string {
   const lastTwo = count % 100;

@@ -10,7 +10,7 @@ import {
   contacts,
   notes,
 } from "@/db/schema";
-import { getKeepInTouchState } from "@/lib/keep-in-touch";
+import { selectOverdueContacts } from "@/lib/keep-in-touch";
 
 // Each read calls connection() so it runs per request and never at build time
 
@@ -100,22 +100,7 @@ export async function listOverdueContacts() {
     // Same order as listContacts; the sort below is stable, so equal overdue keeps it
     .orderBy(asc(contacts.name), asc(contacts.id));
 
-  const now = new Date();
-  return rows
-    .flatMap((row) => {
-      const state = getKeepInTouchState(
-        {
-          frequency: row.contactFrequency,
-          lastNoteAt: row.lastNoteAt,
-          frequencySetAt: row.contactFrequencySetAt,
-        },
-        now,
-      );
-      return state?.overdue
-        ? [{ id: row.id, name: row.name, overdueDays: state.overdueDays }]
-        : [];
-    })
-    .sort((a, b) => b.overdueDays - a.overdueDays);
+  return selectOverdueContacts(rows, new Date());
 }
 
 export async function getContact(id: number) {
