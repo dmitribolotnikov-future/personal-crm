@@ -39,6 +39,7 @@ async function EditContactForm({
 
   return (
     <ContactForm
+      key={contact.updatedAt.toISOString()}
       action={updateContact.bind(null, contact.id)}
       contactId={contact.id}
       groups={groups}
