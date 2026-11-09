@@ -2,12 +2,13 @@
 # Deploys one app image on the server. CI copies deploy/ to /srv/personal-crm and runs
 #   bash deploy.sh <image> [<registry user>]
 # with a short-lived GHCR token on stdin when a registry user is given.
-# Order: database → migrations in a one-off container → new app → smoke /health.
+# Order: backup → image → database → migrations → new app → smoke /health.
 # A failed step stops the script with an error; nothing is rolled back automatically
 # (manual rollback: rollback.sh).
 set -euo pipefail
 
 cd "$(dirname "$0")"
+source ./database.sh
 
 APP_DOMAIN="app.lichnocrm.ru"
 # Successfully deployed images, oldest first: the previous and the current one
@@ -17,13 +18,11 @@ image="${1:?usage: deploy.sh <image> [<registry user>]}"
 registry_user="${2:-}"
 export APP_IMAGE="$image"
 
-compose() {
-  docker compose -p prod "$@"
-}
+lock_operations
 
-step() {
-  echo "==> $*"
-}
+step "Database backup before deployment"
+current_app
+backup_database "$current_image" pre-deploy
 
 step "Image $image"
 # Tags are commit SHAs and never change, so an image already on the server is the right one
