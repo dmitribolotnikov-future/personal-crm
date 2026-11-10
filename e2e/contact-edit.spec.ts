@@ -11,12 +11,12 @@ test("reopening contact editing shows saved values without reloading and discard
   const id = await database.contact(`Контакт ${suffix}`, "week", daysAgo(0));
   const groupNames = [`Друзья ${suffix}`, `Теннис ${suffix}`];
   const { rows: groups } = await database.pool.query<{ id: number }>(
-    "insert into contact_groups (name, normalized_name) values ($1, lower($1)), ($2, lower($2)) returning id",
-    groupNames,
+    "insert into contact_groups (name, normalized_name, owner_id) values ($1, lower($1),$3), ($2, lower($2),$3) returning id",
+    [...groupNames, database.ownerId],
   );
   await database.pool.query(
-    "insert into contact_group_memberships (contact_id, group_id) values ($1, $2)",
-    [id, groups[0].id],
+    "insert into contact_group_memberships (contact_id, group_id, owner_id) values ($1, $2, $3)",
+    [id, groups[0].id, database.ownerId],
   );
   const phone = () =>
     page.getByRole("textbox", { name: "Телефон", exact: true });

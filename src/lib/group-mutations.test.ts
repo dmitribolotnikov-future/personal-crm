@@ -35,7 +35,7 @@ function database({
 test("creating and renaming reject another group's normalized name and keep input", async () => {
   for (const id of [undefined, 2]) {
     const { db, writes } = database({ existingId: 1 });
-    const state = await saveGroup(db, " друзья ", id);
+    const state = await saveGroup(db, "test-owner", " друзья ", id);
     assert.equal(state.name, " друзья ");
     assert.deepEqual(state.errors, ["Группа с таким названием уже есть"]);
     assert.equal(writes.length, 0);
@@ -44,13 +44,13 @@ test("creating and renaming reject another group's normalized name and keep inpu
 
 test("renaming permits its own name and saves trimmed text", async () => {
   const { db, writes } = database({ existingId: 1 });
-  assert.equal((await saveGroup(db, " ДРУЗЬЯ ", 1)).ok, true);
+  assert.equal((await saveGroup(db, "test-owner", " ДРУЗЬЯ ", 1)).ok, true);
   assert.deepEqual(writes, [{ name: "ДРУЗЬЯ", normalizedName: "друзья" }]);
 });
 
 test("empty input is returned without a database write", async () => {
   const { db, writes } = database();
-  const state = await saveGroup(db, "  ");
+  const state = await saveGroup(db, "test-owner", "  ");
   assert.equal(state.name, "  ");
   assert.deepEqual(state.errors, ["Укажите название"]);
   assert.equal(writes.length, 0);
@@ -60,12 +60,12 @@ test("only the group name unique constraint becomes a form error, including wrap
   for (const wrapped of [false, true]) {
     const unique = {
       code: "23505",
-      constraint: "contact_groups_normalized_name_unique",
+      constraint: "contact_groups_owner_name_unique",
     };
     const { db } = database({
       failure: wrapped ? new Error("Query failed", { cause: unique }) : unique,
     });
-    const state = await saveGroup(db, "Друзья");
+    const state = await saveGroup(db, "test-owner", "Друзья");
     assert.equal(state.name, "Друзья");
     assert.deepEqual(state.errors, ["Группа с таким названием уже есть"]);
   }
@@ -74,14 +74,17 @@ test("only the group name unique constraint becomes a form error, including wrap
     { code: "23505", constraint: "other_unique" },
   ]) {
     const { db } = database({ failure });
-    await assert.rejects(saveGroup(db, "Друзья"), (error) => error === failure);
+    await assert.rejects(
+      saveGroup(db, "test-owner", "Друзья"),
+      (error) => error === failure,
+    );
   }
 });
 
 test("invalid group ids cannot reach a write", async () => {
   for (const id of [0, -1, 1.2, 2147483648]) {
     const { db, writes } = database();
-    await assert.rejects(saveGroup(db, "Друзья", id));
+    await assert.rejects(saveGroup(db, "test-owner", "Друзья", id));
     assert.equal(writes.length, 0);
   }
 });

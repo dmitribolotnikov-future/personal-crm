@@ -1,8 +1,10 @@
 import { test as base } from "@playwright/test";
+import { randomUUID } from "node:crypto";
 import { Pool } from "pg";
 
 import { getConnectionConfig } from "../../src/db/connection";
 import type { ContactFrequency } from "../../src/db/schema";
+import { signIn } from "./auth";
 
 export function isolatedPool() {
   const config = getConnectionConfig();
@@ -20,17 +22,29 @@ export function isolatedPool() {
 export const legacyContactName = "Контакт до миграции keep-in-touch";
 
 export const test = base.extend<{ database: TestDatabase }>({
+  page: async ({ page, database }, runTest) => {
+    await signIn(page, database.ownerEmail);
+    await runTest(page);
+  },
   database: async ({}, runTest) => {
     const pool = isolatedPool();
-    const database = new TestDatabase(pool);
+    const ownerId = randomUUID();
+    const ownerEmail = `fixture-${ownerId}@example.test`;
+    await pool.query("insert into auth_user (id,email) values ($1,$2)", [
+      ownerId,
+      ownerEmail,
+    ]);
+    const database = new TestDatabase(pool, ownerId, ownerEmail);
     try {
       await runTest(database);
     } finally {
       try {
         // Only remove contacts owned by this test, never truncate shared tables.
-        await pool.query("delete from contacts where id = any($1::int[])", [
-          database.contactIds,
+        await pool.query("delete from contacts where owner_id=$1", [ownerId]);
+        await pool.query("delete from contact_groups where owner_id=$1", [
+          ownerId,
         ]);
+        await pool.query("delete from auth_user where id=$1", [ownerId]);
       } finally {
         await pool.end();
       }
@@ -40,7 +54,11 @@ export const test = base.extend<{ database: TestDatabase }>({
 
 export class TestDatabase {
   readonly contactIds: number[] = [];
-  constructor(readonly pool: Pool) {}
+  constructor(
+    readonly pool: Pool,
+    readonly ownerId: string,
+    readonly ownerEmail: string,
+  ) {}
 
   track(id: number) {
     this.contactIds.push(id);
@@ -53,8 +71,8 @@ export class TestDatabase {
     startedAt: Date,
   ) {
     const { rows } = await this.pool.query<{ id: number }>(
-      "insert into contacts (name, contact_frequency, contact_frequency_set_at) values ($1, $2, $3) returning id",
-      [name, frequency, frequency ? startedAt : null],
+      "insert into contacts (name, contact_frequency, contact_frequency_set_at, owner_id) values ($1, $2, $3, $4) returning id",
+      [name, frequency, frequency ? startedAt : null, this.ownerId],
     );
     return this.track(rows[0].id);
   }

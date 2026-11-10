@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { expect, test, type Page } from "@playwright/test";
+import { signIn } from "./helpers/auth";
 
 async function addContact(page: Page, name: string) {
   await page
@@ -17,6 +18,8 @@ test("main scenario persists contacts and a conversation note across browser ses
   browser,
 }) => {
   const suffix = randomUUID();
+  const ownerEmail = `main-${suffix}@example.test`;
+  await signIn(page, ownerEmail);
   const contactName = `Анна ${suffix}`;
   const otherContactName = `Борис ${suffix}`;
   const note = `После разговора договорились встретиться в пятницу. ${suffix}`;
@@ -70,6 +73,7 @@ test("main scenario persists contacts and a conversation note across browser ses
     const otherContext = await browser.newContext();
     try {
       const otherPage = await otherContext.newPage();
+      await signIn(otherPage, ownerEmail);
       await otherPage.goto(new URL("/", contactUrl).href);
       await expect(
         otherPage.getByRole("link", { name: contactName, exact: true }),

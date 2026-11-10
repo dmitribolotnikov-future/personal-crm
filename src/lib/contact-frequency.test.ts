@@ -45,7 +45,7 @@ describe("contact frequency form values", () => {
     data.set("email", "invalid");
     const values = readContactValues(data);
     // No dependency is supplied: any database access would fail this test.
-    const result = await saveContact(undefined as never, values);
+    const result = await saveContact(undefined as never, "test-owner", values);
     expect(result).toMatchObject({
       values: { contactFrequency: "month" },
       errors: { email: [expect.any(String)] },

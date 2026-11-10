@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Вход и свои контакты — обзор login</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+/*
+  Design tokens - the only source of colors, fonts, type sizes, spacing, radii and shadows.
+  Values match the landing (personal-crm-landing, src/styles/tokens.css) so both look the same.
+  Tailwind defaults are reset, so only these exist: components added with `shadcn add`
+  come with default classes and must be restyled with these tokens.
+*/
+:root {
+
+  /* Colors */
+  --color-bg: #fbfafa;
+  --color-white: #ffffff;
+  --color-ink: #0d0c22;
+  --color-ink-soft: #3d3d4e;
+  --color-muted: #8b8796;
+  --color-muted-2: #5a5866;
+  --color-accent: #e2602a;
+  --color-accent-ink: #b8461a;
+  --color-accent-deep: #9a3a12;
+  --color-accent-soft: #ffb08a;
+  --color-powder: #f8dfd2;
+  --color-gray: #f1eff4;
+  --color-gray-2: #f7f5f8;
+  --color-avatar-gray: #dedbe5;
+  --color-line: #e4e2ea;
+  --color-line-dark: #2a2940;
+  --color-on-dark-muted: #c9c8d6;
+  /* App only: errors and deleting; the landing has neither */
+  --color-danger: #b3261e;
+
+  /* Font families; the variables they point to are set by next/font in layout.tsx */
+  --font-sans: var(--font-onest);
+  --font-mono: var(--font-jetbrains-mono);
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /* Font sizes in px: the name is the size */
+  --text-11: 11px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-15: 15px;
+  --text-16: 16px;
+  --text-17: 17px;
+  --text-18: 18px;
+  --text-20: 20px;
+  --text-22: 22px;
+  --text-24: 24px;
+  --text-26: 26px;
+  --text-34: 34px;
+  --text-38: 38px;
+  --text-42: 42px;
+
+  /* Line heights */
+  --leading-normal: normal;
+  --leading-none: 1;
+  --leading-display: 1.02;
+  --leading-heading: 1.05;
+  --leading-title: 1.2;
+  --leading-snug: 1.4;
+  --leading-lead: 1.45;
+  --leading-body: 1.5;
+
+  /* Letter spacing */
+  --tracking-tight-50: -0.05em;
+  --tracking-tight-45: -0.045em;
+  --tracking-tight-40: -0.04em;
+  --tracking-tight-30: -0.03em;
+  --tracking-tight-25: -0.025em;
+  --tracking-tight-20: -0.02em;
+  --tracking-wide-60: 0.06em;
+  --tracking-wide-80: 0.08em;
+
+  /*
+    Spacing: every padding, gap, margin, size and offset is a multiple of this 4px step,
+    e.g. p-5 = 20px, gap-4.5 = 18px, max-w-200 = 800px
+  */
+  --spacing: 4px;
+
+  /* Radii */
+  --radius-circle: 50%;
+  --radius-pill: 99px;
+  --radius-12: 12px;
+  --radius-14: 14px;
+  --radius-16: 16px;
+  --radius-18: 18px;
+  --radius-20: 20px;
+  --radius-24: 24px;
+  --radius-28: 28px;
+  --radius-32: 32px;
+  --radius-36: 36px;
+  --radius-40: 40px;
+  --radius-48: 48px;
+
+  /* Shadows */
+  --shadow-card: 0 10px 30px rgb(13 12 34 / 0.1);
+  --shadow-card-lg: 0 14px 40px rgb(13 12 34 / 0.1);
+  --shadow-pill: 0 10px 30px rgb(13 12 34 / 0.08);
+}
+
+:root { --font-onest: "Onest", system-ui, sans-serif; --font-jetbrains-mono: "JetBrains Mono", monospace; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--spacing) * 22); }
+body { margin: 0; color: var(--color-ink); background: var(--color-bg); font-family: var(--font-sans); font-size: var(--text-16); line-height: var(--leading-body); }
+button, select, input { font: inherit; }
+button, select { cursor: pointer; }
+a { color: var(--color-accent-ink); text-underline-offset: var(--spacing); }
+button:focus-visible, select:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--color-accent); outline-offset: var(--spacing); }
+.page { max-width: calc(var(--spacing) * 260); margin: 0 auto; padding: calc(var(--spacing) * 12) calc(var(--spacing) * 6) calc(var(--spacing) * 20); }
+.eyebrow { font-size: var(--text-12); letter-spacing: var(--tracking-wide-80); text-transform: uppercase; color: var(--color-muted-2); font-weight: var(--font-weight-semibold); }
+.dot { display: inline-block; width: calc(var(--spacing) * 2); height: calc(var(--spacing) * 2); border-radius: var(--radius-circle); background: var(--color-accent); margin-right: calc(var(--spacing) * 2); }
+h1 { font-size: var(--text-42); line-height: var(--leading-heading); letter-spacing: var(--tracking-tight-40); max-width: calc(var(--spacing) * 180); margin: calc(var(--spacing) * 5) 0; font-weight: var(--font-weight-extrabold); }
+h2 { font-size: var(--text-26); letter-spacing: var(--tracking-tight-25); line-height: var(--leading-title); margin: 0 0 calc(var(--spacing) * 5); }
+h2 .num { display: inline-block; color: var(--color-accent-ink); font-family: var(--font-mono); font-size: var(--text-14); margin-right: calc(var(--spacing) * 3); vertical-align: middle; }
+h3 { font-size: var(--text-18); margin: 0 0 calc(var(--spacing) * 3); line-height: var(--leading-title); }
+p { margin: 0 0 calc(var(--spacing) * 3); }
+p:last-child { margin-bottom: 0; }
+.lead { color: var(--color-ink-soft); font-size: var(--text-20); line-height: var(--leading-lead); max-width: calc(var(--spacing) * 195); }
+.muted { color: var(--color-muted-2); }
+.small { font-size: var(--text-14); }
+.chips { display: flex; flex-wrap: wrap; gap: calc(var(--spacing) * 2); margin-top: calc(var(--spacing) * 6); }
+.chip { padding: var(--spacing) calc(var(--spacing) * 3); background: var(--color-white); border: 1px solid var(--color-line); border-radius: var(--radius-pill); font-size: var(--text-13); }
+.chip.accent { color: var(--color-accent-ink); background: var(--color-powder); border-color: var(--color-accent-soft); }
+nav { position: sticky; top: 0; z-index: 5; background: var(--color-bg); border-bottom: 1px solid var(--color-line); padding: calc(var(--spacing) * 4) 0; margin-top: calc(var(--spacing) * 7); display: flex; flex-wrap: wrap; gap: calc(var(--spacing) * 3) calc(var(--spacing) * 5); }
+nav a { font-size: var(--text-13); color: var(--color-muted-2); text-decoration: none; }
+nav a:hover { color: var(--color-accent-ink); }
+section { margin-top: calc(var(--spacing) * 16); }
+.card, .rule, .migration { border: 1px solid var(--color-line); border-radius: var(--radius-20); background: var(--color-white); padding: calc(var(--spacing) * 6); }
+.card + .card { margin-top: calc(var(--spacing) * 4); }
+.callout { padding: calc(var(--spacing) * 5); background: var(--color-gray-2); border-left: var(--spacing) solid var(--color-accent); border-radius: 0 var(--radius-16) var(--radius-16) 0; }
+.callout + .callout { margin-top: calc(var(--spacing) * 4); }
+.callout.attention { background: var(--color-powder); }
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--spacing) * 3); margin: calc(var(--spacing) * 6) 0; }
+.flow span { padding: calc(var(--spacing) * 3) calc(var(--spacing) * 4); background: var(--color-white); border: 1px solid var(--color-line); border-radius: var(--radius-12); font-size: var(--text-14); }
+.flow b { color: var(--color-accent-ink); }
+code { font-family: var(--font-mono); font-size: var(--text-12); background: var(--color-gray); padding: 0 var(--spacing); border-radius: var(--spacing); overflow-wrap: anywhere; }
+ul { margin: calc(var(--spacing) * 3) 0 0; padding-left: calc(var(--spacing) * 5); }
+li + li { margin-top: calc(var(--spacing) * 2); }
+.screens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: calc(var(--spacing) * 7); margin-top: calc(var(--spacing) * 6); }
+.sketch { min-width: 0; }
+.sketch h3 { font-size: var(--text-16); }
+.device { padding: calc(var(--spacing) * 5); background: var(--color-gray-2); border: 1px solid var(--color-line); border-radius: var(--radius-20); font-size: var(--text-14); }
+.appbar { display: flex; justify-content: space-between; align-items: center; gap: calc(var(--spacing) * 3); flex-wrap: wrap; padding-bottom: calc(var(--spacing) * 4); margin-bottom: calc(var(--spacing) * 5); border-bottom: 1px solid var(--color-line); }
+.brand { font-size: var(--text-16); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-tight-30); }
+.account { display: flex; gap: calc(var(--spacing) * 2); align-items: center; flex-wrap: wrap; font-size: var(--text-11); }
+.mock-title { font-size: var(--text-22); font-weight: var(--font-weight-bold); margin-bottom: calc(var(--spacing) * 4); line-height: var(--leading-title); }
+.mock-field { background: var(--color-white); border: 1px solid var(--color-line); padding: calc(var(--spacing) * 3); border-radius: var(--radius-12); margin: calc(var(--spacing) * 2) 0 calc(var(--spacing) * 3); }
+.mock-button { display: inline-block; padding: calc(var(--spacing) * 2) calc(var(--spacing) * 3); background: var(--color-ink); color: var(--color-white); border-radius: var(--radius-pill); font-size: var(--text-12); font-weight: var(--font-weight-medium); }
+.mock-link { color: var(--color-accent-ink); font-size: var(--text-12); }
+.new { outline: 2px dashed var(--color-accent); outline-offset: var(--spacing); border-radius: var(--radius-12); }
+.new.panel { padding: calc(var(--spacing) * 4); margin: calc(var(--spacing) * 3) 0; }
+.caption { color: var(--color-muted-2); font-size: var(--text-13); margin-top: calc(var(--spacing) * 4); }
+.caption b { color: var(--color-accent-ink); }
+.mock-row { padding: calc(var(--spacing) * 3) 0; border-bottom: 1px solid var(--color-line); display: flex; align-items: center; justify-content: space-between; gap: calc(var(--spacing) * 3); }
+.mock-row:last-child { border-bottom: 0; }
+.mock-row small { display: block; color: var(--color-muted-2); font-size: var(--text-12); }
+.mock-note { margin-top: calc(var(--spacing) * 3); padding: calc(var(--spacing) * 3); background: var(--color-gray); border-radius: var(--radius-12); }
+.tag { display: inline-block; border: 1px solid var(--color-line); background: var(--color-white); padding: var(--spacing) calc(var(--spacing) * 2); border-radius: var(--radius-pill); font-size: var(--text-12); }
+.error { color: var(--color-danger); font-size: var(--text-13); }
+.mail { background: var(--color-white); }
+.rule { margin-top: calc(var(--spacing) * 3); }
+.rule strong { display: block; margin-bottom: calc(var(--spacing) * 2); }
+.example { margin-top: calc(var(--spacing) * 3); font-size: var(--text-14); color: var(--color-muted-2); padding-top: calc(var(--spacing) * 3); border-top: 1px solid var(--color-line); }
+.legend { display: flex; gap: calc(var(--spacing) * 6); margin: calc(var(--spacing) * 5) 0; font-size: var(--text-13); flex-wrap: wrap; }
+.swatch { display: inline-block; width: calc(var(--spacing) * 3); height: calc(var(--spacing) * 3); border: 1px solid var(--color-line-dark); vertical-align: middle; margin-right: calc(var(--spacing) * 2); background: var(--color-gray-2); }
+.swatch.added { border: 2px dashed var(--color-accent); background: var(--color-powder); }
+.schema { overflow-x: auto; border: 1px solid var(--color-line); border-radius: var(--radius-20); background: var(--color-white); margin: calc(var(--spacing) * 4) 0 calc(var(--spacing) * 7); }
+.schema svg { display: block; width: 100%; min-width: calc(var(--spacing) * 190); height: auto; }
+.schema .box { fill: var(--color-gray-2); stroke: var(--color-line); stroke-width: 1.5; }
+.schema .box.added { fill: var(--color-powder); stroke: var(--color-accent); stroke-dasharray: 6 4; }
+.schema .head { font-family: var(--font-mono); font-size: var(--text-15); font-weight: var(--font-weight-semibold); fill: var(--color-ink); }
+.schema .field { font-family: var(--font-mono); font-size: var(--text-12); fill: var(--color-ink-soft); }
+.schema .label { font-family: var(--font-sans); font-size: var(--text-13); fill: var(--color-muted-2); }
+.schema .new-field { fill: var(--color-accent-ink); font-weight: var(--font-weight-semibold); }
+.schema .wire { fill: none; stroke: var(--color-muted-2); stroke-width: 1.5; marker-end: url(#arrow-before); }
+.schema .wire.added { stroke: var(--color-accent); marker-end: url(#arrow-after); }
+.schema .arrow-old { fill: var(--color-muted-2); }
+.schema .arrow-new { fill: var(--color-accent); }
+.schema-title { display: flex; gap: calc(var(--spacing) * 3); align-items: center; }
+.schema-title .chip { margin-bottom: calc(var(--spacing) * 2); }
+.simulation { margin: calc(var(--spacing) * 6) 0; }
+.simulation label { font-weight: var(--font-weight-semibold); }
+select { padding: calc(var(--spacing) * 3); border: 1px solid var(--color-line); background: var(--color-white); border-radius: var(--radius-12); color: var(--color-ink); max-width: 100%; margin: calc(var(--spacing) * 3) 0; }
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--spacing) * 4); margin-top: calc(var(--spacing) * 4); }
+.result { padding: calc(var(--spacing) * 4); background: var(--color-gray-2); border: 1px solid var(--color-line); border-radius: var(--radius-12); }
+.result.visible { background: var(--color-powder); border: 1px solid var(--color-accent-soft); }
+.result .status { color: var(--color-muted-2); font-size: var(--text-13); margin-top: calc(var(--spacing) * 2); }
+.result.visible .status { color: var(--color-accent-ink); }
+.migration { margin-top: calc(var(--spacing) * 3); }
+.migration .chip { display: inline-block; margin-bottom: calc(var(--spacing) * 3); }
+.migration.changes { border-color: var(--color-accent-soft); }
+.check-tools { display: flex; justify-content: space-between; gap: calc(var(--spacing) * 3); align-items: center; flex-wrap: wrap; margin: calc(var(--spacing) * 5) 0; }
+.tool-button { border: 1px solid var(--color-line); background: var(--color-white); color: var(--color-ink-soft); border-radius: var(--radius-pill); padding: calc(var(--spacing) * 2) calc(var(--spacing) * 4); font-size: var(--text-13); }
+details { border: 1px solid var(--color-line); background: var(--color-white); border-radius: var(--radius-16); margin-top: calc(var(--spacing) * 4); overflow: clip; }
+summary { cursor: pointer; padding: calc(var(--spacing) * 5); font-weight: var(--font-weight-semibold); }
+.checklist { padding: 0 calc(var(--spacing) * 5) calc(var(--spacing) * 3); }
+.check { display: flex; gap: calc(var(--spacing) * 3); padding: calc(var(--spacing) * 4) 0; border-top: 1px solid var(--color-line); cursor: pointer; }
+.check input { width: calc(var(--spacing) * 4); height: calc(var(--spacing) * 4); margin-top: var(--spacing); accent-color: var(--color-accent-ink); flex-shrink: 0; }
+.check .title { font-size: var(--text-15); font-weight: var(--font-weight-semibold); }
+.check .steps { color: var(--color-ink-soft); font-size: var(--text-14); margin-top: var(--spacing); }
+.check:has(input:checked) .title { color: var(--color-muted-2); }
+.check .id { font-family: var(--font-mono); color: var(--color-accent-ink); font-size: var(--text-11); margin-right: calc(var(--spacing) * 2); }
+.check .mode { color: var(--color-muted-2); font-size: var(--text-12); margin-top: var(--spacing); }
+footer { border-top: 1px solid var(--color-line); margin-top: calc(var(--spacing) * 16); padding-top: calc(var(--spacing) * 6); color: var(--color-muted-2); font-size: var(--text-13); }
+@media (max-width: 720px) { .page { padding: calc(var(--spacing) * 8) calc(var(--spacing) * 4) calc(var(--spacing) * 12); } h1 { font-size: var(--text-34); } h2 { font-size: var(--text-24); } .screens, .result-grid { grid-template-columns: 1fr; } .card, .rule, .migration { padding: calc(var(--spacing) * 4); } section { margin-top: calc(var(--spacing) * 12); } .lead { font-size: var(--text-18); } }
+@media print { nav, .check-tools button { display: none; } .page { max-width: none; padding: 0; } section { break-inside: auto; } .sketch, .rule, .migration, .check { break-inside: avoid; } .schema svg { min-width: 0; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+<main class="page">
+  <header>
+    <div class="eyebrow"><span class="dot"></span>Личная CRM · обзор фичи · login</div>
+    <h1>Одна CRM.<br>У каждого — свои люди.</h1>
+    <p class="lead">Вход по ссылке из письма. После входа человек видит только свои контакты, заметки и группы. Ваши нынешние записи сохранятся и станут принадлежать вашему аккаунту.</p>
+    <div class="chips"><span class="chip accent">Спроектирована</span><span class="chip">Задачи: 0 из 36</span><span class="chip">45 сценариев проверки</span><span class="chip">Новые автотесты ещё не написаны</span></div>
+  </header>
+  <nav aria-label="Разделы обзора"><a href="#summary">Коротко</a><a href="#screens">Экраны</a><a href="#rules">Правила</a><a href="#data">Данные</a><a href="#checks">Проверки</a><a href="#decisions">Решения агента</a><a href="#questions">Вопросы</a></nav>
+
+  <section id="summary">
+    <h2><span class="num">01</span>Коротко</h2>
+    <p>Друзья смогут пользоваться приложением под своей почтой. Отдельной регистрации нет: первый переход по действующей ссылке создаёт аккаунт, имя и пароль не спрашиваются.</p>
+    <div class="flow" aria-label="Основной сценарий"><span>Открыть CRM</span><b>→</b><span>Указать почту</span><b>→</b><span>Открыть письмо</span><b>→</b><span>Вести свои контакты</span></div>
+    <div class="callout"><b>Сейчас готов только проект фичи.</b> Описание, четыре спецификации, технический план и 36 задач подготовлены. Все задачи пока не отмечены. Тесты для новых правил запланированы; существующий главный тест контактов останется отдельным и будет входить перед своим сценарием.</div>
+  </section>
+
+  <section id="screens">
+    <h2><span class="num">02</span>Что появится на экранах</h2>
+    <p class="muted small">Это наброски по требованиям, не утверждённый дизайн. Пунктир выделяет новое. Почты и контакты — выдуманные примеры.</p>
+    <div class="screens">
+      <article class="sketch"><h3>1. Вход без пароля</h3><div class="device"><div class="appbar"><span class="brand"><span class="dot"></span>Личная CRM</span></div><div class="new panel"><div class="mock-title">Вход</div><div>Почта</div><div class="mock-field">anna@example.com</div><span class="mock-button">Получить ссылку</span></div></div><p class="caption">Без входа сюда ведут и главная, и прямые ссылки на внутренние страницы.</p></article>
+      <article class="sketch"><h3>2. Подтверждение и ошибки</h3><div class="device"><div class="new panel"><b>Ссылка для входа отправлена на anna@example.com</b></div><div class="mock-note"><div class="small muted">Если почта неверная — под полем:</div><div class="error">Проверь адрес почты</div></div><div class="mock-note"><div class="small muted">Если писем слишком много:</div><div>Слишком часто, попробуй через несколько минут</div></div></div><p class="caption">Для новой и знакомой почты подтверждение одинаковое.</p></article>
+      <article class="sketch"><h3>3. Письмо</h3><div class="device mail"><div class="small muted">От: Личная CRM &lt;noreply@mail.crm.&lt;ваш домен&gt;&gt;</div><div class="new panel"><div class="mock-title">Вход в Личную CRM</div><p><span class="mock-button">Войти</span></p><p>Ссылка работает 15 минут.</p><p class="small muted">Если вы не запрашивали вход - просто проигнорируйте письмо</p></div></div><p class="caption">На компьютере письмо попадёт в Mailpit — местный почтовый ящик для проверки. На сервере — в настоящий ящик.</p></article>
+      <article class="sketch"><h3>4. Ссылка устарела</h3><div class="device"><div class="appbar"><span class="brand"><span class="dot"></span>Личная CRM</span></div><div class="new panel"><div class="mock-title">Ссылка устарела, запроси новую</div><span class="mock-button">На страницу входа</span></div></div><p class="caption">Один экран для истёкшей, заменённой, неверной и уже использованной ссылки.</p></article>
+      <article class="sketch"><h3>5. Главная после входа</h3><div class="device"><div class="appbar"><span class="brand">Личная CRM</span><div class="account new"><span>anna@example.com</span><span class="mock-link">Выйти</span></div></div><div class="mock-title">Мои контакты</div><div class="mock-field muted">Поиск по имени</div><div class="mock-note"><b>Пора связаться</b><div class="mock-row"><span>Борис Соколов<small>просрочено на 5 дней</small></span><span class="mock-button">Связались</span></div></div><div class="mock-row"><span>Анна Петрова<small>Знакомая по теннису</small></span></div><div class="mock-row"><span>Борис Соколов<small>Бывший коллега</small></span></div></div><p class="caption"><b>Новое в данных:</b> весь список, поиск и «Пора связаться» относятся только к вошедшему пользователю.</p></article>
+      <article class="sketch"><h3>6. Первый вход нового человека</h3><div class="device"><div class="appbar"><span class="brand">Личная CRM</span><div class="account new"><span>boris@example.com</span><span class="mock-link">Выйти</span></div></div><div class="mock-title">Мои контакты</div><div class="new panel"><p><b>Добавь первый контакт</b></p><span class="mock-button">Новый контакт</span></div></div><p class="caption">Ваши старые и демонстрационные контакты сюда не попадут.</p></article>
+      <article class="sketch"><h3>7. Карточка своего контакта</h3><div class="device"><div class="appbar"><span class="brand">Личная CRM</span><span class="account new">anna@example.com · Выйти</span></div><div class="mock-title">Борис Соколов</div><p class="muted">Бывший коллега</p><p><span class="tag">Друзья</span> <span class="mock-link">+</span></p><p class="mock-link">Настроить группы · Изменить</p><div class="mock-note"><b>Заметки</b><p class="small">Обсудили встречу в декабре.</p></div><div class="mock-field muted">Новая заметка</div><span class="mock-button">Связались</span></div><p class="caption">Карточка, заметки, «Связались» и правки доступны только владельцу. Прежние поля и правила сроков сохраняются.</p></article>
+      <article class="sketch"><h3>8. Чужая карточка по прямой ссылке</h3><div class="device"><div class="appbar"><span class="brand">Личная CRM</span><span class="account new">boris@example.com · Выйти</span></div><div class="new panel"><div class="mock-title">Контакт не найден</div></div></div><p class="caption">Нельзя узнать ни имя, ни заметки, ни даже то, существует ли такой чужой контакт.</p></article>
+      <article class="sketch"><h3>9. Добавление и изменение контакта</h3><div class="device"><div class="appbar"><span class="brand">Личная CRM</span><span class="account new">anna@example.com · Выйти</span></div><div class="mock-title">Изменить контакт</div><div>Имя</div><div class="mock-field">Борис Соколов</div><div>Группы</div><div class="mock-field">☑ Друзья &nbsp; ☐ Теннис &nbsp; +</div><span class="mock-button">Сохранить</span></div><p class="caption">В обеих формах доступны только свои группы. Переданный вручную номер чужой группы сервер тоже отклонит.</p></article>
+      <article class="sketch"><h3>10. Группы и участники</h3><div class="device"><div class="appbar"><span class="brand">Личная CRM</span><span class="account new">anna@example.com · Выйти</span></div><div class="mock-title">Группы</div><div class="mock-row"><span>Друзья</span><span class="mock-link">Изменить · Удалить</span></div><div class="mock-row"><span>Теннис</span><span class="mock-link">Изменить · Удалить</span></div><div class="mock-note"><b>Участники → Друзья</b><p class="small">Анна Петрова · Борис Соколов</p></div></div><p class="caption">И список групп, и отдельная страница участников — только ваши. У другого человека может быть своя группа «Друзья».</p></article>
+    </div>
+  </section>
+
+  <section id="rules">
+    <h2><span class="num">03</span>Как это работает</h2>
+    <div class="rule"><strong>Почта и есть ваш вход</strong>Первый успешный переход по ссылке создаёт аккаунт. Последующие входы открывают тот же аккаунт. Имя, пароль, коды и вход через соцсети не добавляются.<div class="example">« Anna@Example.com » и «anna@example.com» — один человек: пробелы по краям убираются, регистр не различается.</div></div>
+    <div class="rule"><strong>Ссылка действует один раз и 15 минут</strong>Новая выданная ссылка заменяет все предыдущие для этой почты. Повторное открытие уже использованной ссылки не даёт ещё один вход.<div class="example">Получили письмо в 12:00 → ссылка действует до 12:15. Запросили другую в 12:05 → письмо от 12:00 уже не подходит.</div></div>
+    <div class="rule"><strong>Не больше трёх писем за десять минут</strong>Счётчик общий для одной почты, даже с разных устройств. У другой почты свой лимит. Отклонённый из-за лимита запрос нового письма не создаёт.<div class="example">Письма в 12:00, 12:02 и 12:04 → в 12:06 четвёртого не будет. Когда первое выйдет из десятиминутного окна, появится место для следующего.</div></div>
+    <div class="rule"><strong>Вход сохраняется на каждом устройстве</strong>Срок — 30 дней с последнего захода на этом устройстве. Можно войти и на компьютере, и на телефоне. «Выйти» завершает вход только там, где нажато.<div class="example">Вышли на компьютере → на телефоне остаётесь внутри. После 30 дней без заходов устройство снова попросит письмо.</div></div>
+    <div class="rule"><strong>Свои данные проверяет сервер</strong>Ограничение действует на списки, поиск, карточки, заметки, группы, фильтры и «Пора связаться». Подстановка чужого номера в запросе не позволяет ни прочитать, ни изменить чужую запись.<div class="example">У Анны и Бориса по группе «Друзья». Название одинаковое, контакты и участники независимы.</div></div>
+    <div class="rule"><strong>Старые записи останутся вашими</strong>Контакты, заметки, группы и связи между ними сохранятся целиком. При переносе им назначат ваш аккаунт; демонстрационные записи тоже будут принадлежать вам.<div class="example">Сколько записей было перед обновлением, столько должно остаться после него. Другой новый пользователь начнёт с пустого списка.</div></div>
+    <div class="rule"><strong>Проверочные и настоящие письма идут разными путями</strong>На вашем компьютере и в автотестах письма остаются в Mailpit. На сервере Nodemailer отправляет их через Resend. Одна сборка приложения выбирает путь по настройкам.<div class="example">Для проверки двух людей локально достаточно anna@example.com и boris@example.com — настоящие ящики не нужны.</div></div>
+  </section>
+
+  <section id="data">
+    <h2><span class="num">04</span>Модель данных до и после</h2>
+    <p>Таблица — список однотипных записей в базе. Стрелка показывает связь: например, к какому контакту относится заметка. На схемах показаны важные поля; остальные поля контактов и даты сохраняются.</p>
+    <div class="legend"><span><i class="swatch"></i>Как было</span><span><i class="swatch added"></i>Новое: таблица, поле или связь</span></div>
+    <div class="schema-title"><h3>Сейчас</h3><span class="chip">Нет пользователей и владельцев</span></div>
+    <div class="schema"><svg viewBox="0 0 960 340" role="img" aria-labelledby="before-title before-desc"><title id="before-title">Общая база сейчас</title><desc id="before-desc">Контакты связаны с заметками и со связями групп. Группы тоже связаны с составом групп. Пользователей и владельцев нет.</desc><defs><marker id="arrow-before" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path class="arrow-old" d="M0,0 L8,4 L0,8 Z"/></marker></defs>
+      <path class="wire" d="M300 90 H365"/><path class="wire" d="M165 155 V200 H535 V230"/><path class="wire" d="M795 155 V210 H610 V230"/>
+      <rect class="box" x="30" y="30" width="270" height="125" rx="14"/><text class="head" x="48" y="60">contacts</text><text class="label" x="48" y="83">Контакты</text><text class="field" x="48" y="112">id · name · phone · email</text><text class="field" x="48" y="134">частота общения и даты</text>
+      <rect class="box" x="365" y="30" width="270" height="125" rx="14"/><text class="head" x="383" y="60">notes</text><text class="label" x="383" y="83">Заметки</text><text class="field" x="383" y="112">id · contact_id · body</text><text class="field" x="383" y="134">created_at · updated_at</text>
+      <rect class="box" x="660" y="30" width="270" height="125" rx="14"/><text class="head" x="678" y="60">contact_groups</text><text class="label" x="678" y="83">Группы</text><text class="field" x="678" y="112">id · name · normalized_name</text><text class="label" x="678" y="134">Название уникально на всех</text>
+      <rect class="box" x="365" y="230" width="300" height="80" rx="14"/><text class="head" x="383" y="260">contact_group_memberships</text><text class="field" x="383" y="288">contact_id · group_id</text><text class="label" x="32" y="280">Любой посетитель видит общую базу</text>
+    </svg></div>
+    <div class="schema-title"><h3>После</h3><span class="chip accent">Аккаунт → свои контакты и группы</span></div>
+    <div class="schema"><svg viewBox="0 0 960 700" role="img" aria-labelledby="after-title after-desc"><title id="after-title">Личные данные после добавления входа</title><desc id="after-desc">Новая таблица пользователей связана с сессиями, владельцами контактов и групп. Заметки по-прежнему принадлежат контакту. Связи групп получают владельца и допускают только контакт и группу одного пользователя. Отдельно добавляются служебные записи входа.</desc><defs><marker id="arrow-after" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path class="arrow-new" d="M0,0 L8,4 L0,8 Z"/></marker></defs>
+      <path class="wire added" d="M345 90 H300"/><path class="wire added" d="M415 155 V200 H165 V245"/><path class="wire added" d="M545 155 V200 H795 V245"/><path class="wire added" d="M165 410 V495"/><path class="wire added" d="M300 345 H375 V470"/><path class="wire added" d="M660 345 H585 V470"/>
+      <rect class="box added" x="345" y="30" width="270" height="125" rx="14"/><text class="head" x="363" y="60">user · пользователи</text><text class="field" x="363" y="90">id · email</text><text class="label" x="363" y="117">Одна почта = один аккаунт</text><text class="label" x="363" y="139">Создание при первом входе</text>
+      <rect class="box added" x="30" y="30" width="270" height="125" rx="14"/><text class="head" x="48" y="60">session · входы</text><text class="field" x="48" y="90">user_id · token · expires_at</text><text class="label" x="48" y="117">Свой вход на каждом устройстве</text><text class="label" x="48" y="139">30 дней с последнего захода</text>
+      <rect class="box" x="30" y="245" width="270" height="165" rx="14"/><text class="head" x="48" y="277">contacts</text><text class="field" x="48" y="306">id · name · прежние поля</text><rect x="42" y="320" width="246" height="33" rx="4" class="box added"/><text class="field new-field" x="48" y="342">+ owner_id · владелец</text><text class="label" x="48" y="380">Чужие записи не выдаются</text>
+      <rect class="box" x="660" y="245" width="270" height="165" rx="14"/><text class="head" x="678" y="277">contact_groups</text><text class="field" x="678" y="306">id · name · normalized_name</text><rect x="672" y="320" width="246" height="33" rx="4" class="box added"/><text class="field new-field" x="678" y="342">+ owner_id · владелец</text><text class="label" x="678" y="380">Уникальность внутри аккаунта</text>
+      <rect class="box" x="30" y="495" width="270" height="115" rx="14"/><text class="head" x="48" y="527">notes</text><text class="field" x="48" y="555">id · contact_id · body</text><text class="label" x="48" y="584">Владелец — через контакт</text>
+      <rect class="box" x="335" y="470" width="300" height="155" rx="14"/><text class="head" x="353" y="502">contact_group_memberships</text><text class="field" x="353" y="530">contact_id · group_id</text><rect x="347" y="541" width="276" height="32" rx="4" class="box added"/><text class="field new-field" x="353" y="563">+ owner_id</text><text class="label" x="353" y="601">Оба участника связи одного владельца</text>
+      <rect class="box added" x="660" y="470" width="270" height="155" rx="14"/><text class="head" x="678" y="502">Служебные записи входа</text><text class="field" x="678" y="530">account · verification</text><text class="field" x="678" y="555">magic_link_requests</text><text class="field" x="678" y="580">magic_link_tokens</text><text class="label" x="678" y="605">Ссылки, срок и счётчик писем</text>
+      <text class="label" x="32" y="668">Схема логическая: точные поля Better Auth определятся выбранной версией при реализации.</text>
+    </svg></div>
+    <div class="callout">У заметки не появляется отдельный независимый владелец: сервер находит её контакт и проверяет владельца контакта. Связать свой контакт с чужой группой не позволит и приложение, и устройство базы.</div>
+
+    <div class="card simulation">
+      <h3>Пример: как запрос находит своё и пропускает чужое</h3>
+      <p class="small muted">Этот переключатель существует только в обзоре. В приложении пользователя определяет проверенный вход, а не выбор в списке.</p>
+      <label for="viewer">Кто вошёл:</label><br>
+      <select id="viewer"><option value="A">Анна · anna@example.com</option><option value="B">Борис · boris@example.com</option></select>
+      <p id="query-description" aria-live="polite"></p>
+      <div class="result-grid"><div class="result visible" data-owner="A"><b>Контакт №17 · Елена Орлова</b><p class="small">Владелец: Анна · группа «Друзья»</p><div class="status">Попадает в список и поиск</div></div><div class="result" data-owner="B"><b>Контакт №28 · Игорь Волков</b><p class="small">Владелец: Борис · группа «Друзья»</p><div class="status">Не выдаётся; прямая ссылка → «Контакт не найден»</div></div></div>
+      <p class="small muted" style="margin-top:calc(var(--spacing) * 4)">Сервер проверяет одновременно номер записи и её владельца. Переданный с клиента чужой номер не меняет того, кто вошёл.</p>
+    </div>
+
+    <h3>Как будут перенесены данные</h3>
+    <p class="small muted">Миграция — записанное в коде изменение базы. Ниже этапы из плана; SQL-файлы ещё не созданы, их количество и точные имена пока не определены.</p>
+    <article class="migration"><span class="chip">Новые таблицы</span><h3>1. Добавить учёт пользователей и входов</h3><p>Появятся пользователи, входы с устройств и служебные записи ссылок/лимита. Старые контакты, заметки и группы на этом этапе не переписываются.</p></article>
+    <article class="migration changes"><span class="chip accent">Меняет существующие записи</span><h3>2. Назначить владельца прежним данным</h3><p>Создать или найти аккаунт с вашей подтверждённой для переноса почтой. Проставить его владельцем всем прежним контактам, группам и связям. Заметки остаются у своих контактов. Номера, тексты, поля, даты, частота общения и количество записей сохраняются.</p><p class="small muted">Способ передачи вашей почты нужно согласовать при реализации. До этого адрес не подставляется автоматически. Само создание аккаунта не считается подтверждением владения почтой.</p></article>
+    <article class="migration changes"><span class="chip accent">Меняет ограничения базы</span><h3>3. Закрепить правила владения</h3><p>Владелец станет обязательным. Названия групп будут уникальны внутри аккаунта. Связь группы и контакта допустима только для одного владельца. Перенос проверят по состоянию записей и их количеству до и после; частичный перенос не должен сохраняться.</p></article>
+    <div class="callout attention" style="margin-top:calc(var(--spacing) * 5)"><b>Выкатка и откат.</b> План: копия базы → остановка старого приложения на время переноса → миграции → новое приложение → проверка <code>/health</code>. Миграцию с изменением ваших записей покажут до слияния. При необходимости возвращаются вместе прежняя версия приложения и копия базы перед выкаткой. Восстановление запускаете вы вручную; само приложение откат не выполняет. Точная команда парного восстановления ещё должна быть подготовлена при реализации.</div>
+  </section>
+
+  <section id="checks">
+    <h2><span class="num">05</span>Как проверить руками</h2>
+    <div class="callout"><b>После реализации.</b> Понадобятся два независимых браузера и два проверочных адреса. Локально письма берутся из Mailpit. Проверки прямых запросов, точных сроков и одновременных действий требуют тестовой среды и помощи разработчика; в плане для них предусмотрены автотесты. Проверки изменения и удаления выполняются на проверочных данных.</div>
+    <div class="check-tools"><span id="check-progress" aria-live="polite">Отмечено 0 из 45</span><div><button class="tool-button" id="expand-checks" type="button">Раскрыть всё</button> <button class="tool-button" id="reset-checks" type="button">Снять галочки</button></div></div>
+    <p class="small muted">Галочки — ваши пометки о ручной проверке, а не результат автотестов и не выполнение задач OpenSpec. Сохраняются только в этом браузере, если он разрешает локальное хранение.</p>
+    <div id="check-groups"></div>
+    <noscript>Для показа интерактивного списка проверок включите JavaScript в браузере.</noscript>
+  </section>
+
+  <section id="decisions">
+    <h2><span class="num">06</span>Что агент решил сам</h2>
+    <div class="card"><h3>Видимое поведение — стоит просмотреть</h3><ul><li>В подтверждении отправки показывать почту уже без крайних пробелов и в нижнем регистре. Само правило приведения почты задано в исходных требованиях, вид подтверждения уточнён в плане.</li><li>После успешного входа открывать главную; при ошибке ссылки — отдельную страницу с возвратом ко входу. Адрес страницы входа — <code>/login</code>.</li><li>Отклонённый из-за лимита запрос не заменяет последнюю действующую ссылку.</li><li>При сбое отправки письма сохранять обычное подтверждение и записывать ошибку для обслуживания. Это толкование правила «после отправки всегда одинаковое сообщение»; отдельно сбой сервиса в исходной спецификации не описан.</li><li>Заранее резервировать место в лимите до обращения к почте. Поэтому неудачная попытка тоже может занять место в лимите — деталь технического плана с видимым эффектом.</li><li>На время переноса остановить приложение. Если перенос упал — не запускать несовместимую старую версию автоматически. Это добавлено в план для перехода к личным данным.</li></ul><p class="small muted" style="margin-top:calc(var(--spacing) * 4)">Это решения, записанные агентом в плане. Перечень не означает, что вы уже согласовали их отдельно.</p></div>
+    <div class="card"><h3>Технические решения</h3><ul><li>Хранить аккаунты и входы в существующей PostgreSQL через Better Auth и Drizzle.</li><li>У контакта и группы хранить владельца; у заметки получать его через контакт.</li><li>Защитить связи контактов и групп ограничениями самой базы.</li><li>Хранить счётчик писем и сведения о последней ссылке в базе; одновременные запросы одной почты выполнять по очереди.</li><li>Для писем использовать один Nodemailer, а направление доставки выбирать настройками во время запуска.</li><li>Проверять вход и владельца в каждом серверном чтении и изменении; одной закрытой страницы недостаточно.</li><li>Локальные и серверные миграции проводить одним путём. Демо-данные загружать только вашему аккаунту.</li></ul></div>
+    <p class="caption">Вход только по письму, 15 минут, три письма за десять минут, 30 дней, отдельные данные и выбор Better Auth / Nodemailer / Resend / Mailpit заданы вашей спецификацией.</p>
+  </section>
+
+  <section id="questions">
+    <h2><span class="num">07</span>Что осталось неясным</h2>
+    <div class="card"><h3>Как передать вашу почту для старых данных?</h3><p>К вашему аккаунту должны отойти все прежние и демонстрационные записи. Откуда миграции и загрузчик демо-данных получают этот адрес, по требованиям нужно спросить у вас при реализации. В плане нет выбранного адреса или значения по умолчанию.</p></div>
+    <div class="card"><h3>Что подготовить к настоящей отправке?</h3><p>Нужно подтвердить адрес отправителя и домен, адрес приложения, настроить Resend и записи домена. Пароли и ключи вы задаёте сами. В обзоре они не читаются и не создаются.</p></div>
+    <p class="caption">Кроме этих открытых пунктов, стоит просмотреть видимые решения из предыдущего раздела. Точные поля служебных таблиц, миграции и команда восстановления появятся при реализации.</p>
+  </section>
+
+  <footer>Собрано 10 ноября 2026 по <code>openspec/changes/login/</code>: proposal.md, design.md, tasks.md и четырём спецификациям. Это обзор проекта фичи. Он не запускает вход, отправку писем, миграции, выкатку или восстановление. Макеты и переключатель данных — иллюстрации.<br>Оформление: значения дизайн-токенов из <code>src/app/tokens.css</code>; шрифты Onest и JetBrains Mono.</footer>
+</main>
+<script id="scenario-data" type="application/json">
+[
+ {"title":"Вход и письма · 19 сценариев","items":[
+  ["A01","Без входа контакты недоступны","Выйти, открыть главную и прямую ссылку на карточку → страница входа, данных нет. В тестовой среде повторить прямое чтение и изменение без входа → отказ.","Браузер; прямые запросы — с разработчиком"],
+  ["A02","Проверка работы приложения открыта","Без входа открыть /health → прежний ответ о работе приложения, без перенаправления на вход.","Браузер"],
+  ["A03","Варианты одной почты — один аккаунт","Войти как anna@example.com, создать контакт. Выйти и запросить ссылку для « Anna@Example.com » → тот же аккаунт и контакт; счётчик писем и замена ссылки общие.","Браузер и почтовый ящик"],
+  ["A04","Неверная почта в форме","Ввести неверный адрес и отправить → под полем «Проверь адрес почты», нового письма нет.","Браузер и почтовый ящик"],
+  ["A05","Неверная почта в прямом запросе","В тестовой среде отправить неверную почту напрямую на сервер, минуя форму → сервер отклоняет запрос, письмо не появляется.","С разработчиком"],
+  ["A06","Новая и прежняя почта получают одинаковое подтверждение","Запросить ссылки для нового и существующего адреса, не достигших лимита → оба видят «Ссылка для входа отправлена на …», оба получают письмо; наличие аккаунта не раскрыто.","Браузер и почтовый ящик"],
+  ["A07","Первый и повторный вход","Открыть письмо для новой почты, выйти, получить ещё одно письмо и войти → не спрашиваются имя и пароль; второй вход возвращает в тот же аккаунт.","Браузер"],
+  ["A08","Действующая ссылка","Открыть последнюю неиспользованную ссылку до истечения 15 минут → вход выполнен, видны свои контакты.","Браузер"],
+  ["A09","Истёкшая ссылка","Оставить ссылку неиспользованной на 15 минут и открыть → «Ссылка устарела, запроси новую», кнопка ведёт ко входу. Точную границу времени проверить в тестовой среде.","Браузер; точное время — с разработчиком"],
+  ["A10","Ссылка работает только один раз","Открыть ссылку и затем повторить её в другом независимом браузере → второй вход не происходит, показано сообщение об устаревшей ссылке. Одновременное открытие проверить отдельным тестом → успешен только один вход.","Два браузера; одновременность — с разработчиком"],
+  ["A11","Новое письмо заменяет старые","Запросить две ссылки для одной почты, в том числе с разным регистром → первая не работает, последняя работает в пределах своего срока.","Браузер и почтовый ящик"],
+  ["A12","Лимит и его восстановление","Получить три письма за десять минут и запросить четвёртое → письма нет, «Слишком часто, попробуй через несколько минут». После выхода раннего письма из окна запрос снова разрешён.","Браузер и почтовый ящик"],
+  ["A13","Общий лимит с разных устройств","Одновременно запросить ссылки с нескольких устройств для вариантов одной почты → за десять минут не больше трёх писем. Другой адрес имеет отдельный лимит.","С разработчиком: одновременные запросы"],
+  ["A14","30 дней от последнего захода","В проверочной базе подготовить вход до границы истечения, зайти → срок продлён на 30 дней. Подготовить вход с 30 днями бездействия → требуется письмо. Проверить также срок сохранения в браузере.","С разработчиком: время в тестовой базе; ждать месяц не нужно"],
+  ["A15","Выход только на одном устройстве","Войти в один аккаунт в двух браузерах → в шапке почта. Нажать «Выйти» в первом → вход и прямые запросы там закрыты, второй продолжает работать.","Два браузера; прямой запрос — с разработчиком"],
+  ["A16","Содержимое письма","Открыть письмо → отправитель «Личная CRM» с оговорённым адресом, тема «Вход в Личную CRM», кнопка «Войти», срок 15 минут и фраза о незапрошенном входе. Кнопка ведёт на адрес приложения.","Почтовый ящик"],
+  ["A17","Локальный ящик Mailpit","На компьютере запросить вход под произвольным проверочным адресом → письмо видно в Docker Mailpit; ссылка впускает; настоящая почта не отправлялась.","Локальное приложение и Mailpit"],
+  ["A18","Настоящий вход в автотестах","Запустить браузерные проверки локально и посмотреть запуск на GitHub → они берут настоящую ссылку из Mailpit, входят с настоящей базой и не отправляют внешние письма.","Запуск и отчёт проверок вместе с разработчиком"],
+  ["A19","Письмо на сервере","После согласованной выкатки запросить ссылку на свой настоящий ящик → письмо приходит через Resend и выполняет вход. Проверить, что используется та же сборка приложения с другими настройками.","Настоящая выкатка; настройки проверяются с разработчиком"]
+ ]},
+ {"title":"Свои данные и перенос · 12 сценариев","items":[
+  ["D01","Подмена владельца и чужая группа","На проверочных аккаунтах отправить от B запись с владельцем A и назначение чужой группы → запись к A не попадает, связь не создаётся, прежние поля и группы сохранены.","Прямые запросы и проверка базы — с разработчиком"],
+  ["D02","Главный сценарий двух людей","A входит по письму и добавляет контакт. B входит в другом браузере → контакта нет в списке и поиске; прямая ссылка показывает «Контакт не найден». У A карточка по-прежнему открывается.","Два браузера"],
+  ["D03","Прямое чтение и изменение чужой карточки","Под B открыть карточку и форму изменения контакта A, повторить прямой серверный запрос → ни поля, ни заметки, ни группы не выдаются. Несуществующий номер ведёт себя так же.","Браузер и запросы — с разработчиком"],
+  ["D04","Чужой контакт нельзя исправить или удалить","От B по очереди отправить изменение и удаление контакта A → отказ, контакт A со всеми данными на месте. Те же операции со своим проверочным контактом B работают.","С разработчиком, на проверочных данных"],
+  ["D05","Чужие заметки и «Связались» защищены","От B по очереди запросить, добавить, изменить, удалить заметку A и вызвать «Связались» → чужих данных нет, тексты, даты и срок общения не меняются. На своём контакте B операции работают.","С разработчиком, на проверочных данных"],
+  ["D06","Чужие группы защищены","От B запросить группу/участников A, переименование, удаление и создание группы прямо у контакта A → отказ, данные A сохранены. Неудачная попытка не оставляет пустую новую группу или связь.","С разработчиком, на проверочных данных"],
+  ["D07","Выбор и фильтры не раскрывают чужое","Под B посмотреть выбор групп у контакта и фильтр. Передать номер группы A напрямую → в ответах и подписях нет чужих групп и участников.","Браузер; прямые запросы — с разработчиком"],
+  ["D08","Новый аккаунт пуст","Первый раз войти под новой почтой → пустой список и «Добавь первый контакт», без чужих и демонстрационных записей.","Браузер"],
+  ["D09","Другой браузер и смена аккаунта","Войти как A во втором браузере → свои прежние записи. Там выйти и войти как B → только данные B, данные A не остаются на страницах и в ответах сервера.","Два браузера; ответы сервера — с разработчиком"],
+  ["D10","Перенос без потерь","На проверочной копии записать количество и состояние контактов, заметок, групп и связей до миграции; выполнить перенос → те же номера, поля, тексты, даты, частоты и связи. Всё принадлежит выбранному владельцу, B данных не видит.","Тестовая копия базы вместе с разработчиком; не запускать перенос вручную на проде"],
+  ["D11","Демо-данные только владельцу","В тестовой среде загрузить демонстрационные записи владельцу и повторить загрузку → повторов нет, чужие записи не меняются и не мешают загрузке; у другого аккаунта демо не появляется.","Тестовая среда вместе с разработчиком"],
+  ["D12","Ручной парный откат","До выкатки просмотреть инструкцию → указаны копия базы до входа и прежняя версия приложения; восстановление только человеком, с подтверждением, без повторного применения новой миграции. Ошибка проверки выкатки не запускает автооткат.","Проверка инструкции; настоящее восстановление запускает только владелец"]
+ ]},
+ {"title":"Группы · 8 сценариев","items":[
+  ["G01","Создать свою группу","Войти и создать «Теннис» → группа есть в своём списке и выборе у контакта; участников пока нет.","Браузер"],
+  ["G02","Группа без контактов","В новом пустом аккаунте открыть группы и создать «Семья» → создание доступно и сохраняется.","Браузер"],
+  ["G03","Группы в другом браузере","Создать группы, назначить им контакты и войти тем же аккаунтом в другой браузер → названия и участники те же. Другой аккаунт их не получает.","Два браузера"],
+  ["G04","Пустое название","Ввести только пробелы при создании и переименовании → объяснение ошибки, новая группа не создана, прежняя не переименована.","Браузер"],
+  ["G05","Пробелы по краям","Создать «  Аналитики  » → сохранено и показано «Аналитики».","Браузер"],
+  ["G06","Повторное создание у себя","Уже имея «Друзья», создать « друзья » → сообщение о совпадении, второй группы нет, введённое имя осталось для исправления.","Браузер"],
+  ["G07","Повторное название при переименовании","Иметь «Друзья» и «Теннис», переименовать «Теннис» в «ДРУЗЬЯ» → ошибка; прежние названия и участники обеих групп сохранены.","Браузер"],
+  ["G08","Одинаковые названия у разных людей","У A есть «Друзья». Под B создать или переименовать свою группу в « друзья » → сохранение проходит, пробелы убраны, участники двух групп независимы.","Два аккаунта"]
+ ]},
+ {"title":"Пора связаться · 6 сценариев","items":[
+  ["K01","Есть просроченные контакты","Подготовить у текущего пользователя два просроченных контакта → над списком видны именно они, правильное число дней со склонением и «Связались».","Браузер; даты подготовить в тестовой среде"],
+  ["K02","У себя просроченных нет","Открыть аккаунт без просроченных, хотя у другого они есть → блока нет.","Два аккаунта"],
+  ["K03","Переход в свою карточку","Нажать имя в своём блоке «Пора связаться» → открылась карточка этого контакта.","Браузер"],
+  ["K04","Поиск и группы не меняют блок","Ввести имя в поиск и выбрать группы → общий список фильтруется, полный блок своих просроченных остаётся тем же.","Браузер"],
+  ["K05","Тот же аккаунт в другом браузере","Войти тем же аккаунтом во второй браузер → те же просроченные контакты с теми же сроками.","Два браузера"],
+  ["K06","Просроченные двух людей не смешиваются","У A и B есть просроченные контакты. Под B открыть главную → только просроченные B; имена и сроки A не выдаются.","Два аккаунта; ответы сервера — с разработчиком"]
+ ]}
+]
+</script>
+<script>
+const scenarioGroups = JSON.parse(document.getElementById('scenario-data').textContent);
+const checklistRoot = document.getElementById('check-groups');
+const storageKey = 'personal-crm-login-overview-checks-v1';
+let savedChecks = {};
+try { savedChecks = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch { savedChecks = {}; }
+if (!savedChecks || typeof savedChecks !== 'object') savedChecks = {};
+for (const group of scenarioGroups) {
+  const details = document.createElement('details');
+  details.open = true;
+  const summary = document.createElement('summary');
+  summary.textContent = group.title;
+  const list = document.createElement('div');
+  list.className = 'checklist';
+  for (const [id, title, steps, mode] of group.items) {
+    const label = document.createElement('label');
+    label.className = 'check';
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.id = 'check-' + id;
+    input.dataset.scenario = id;
+    input.checked = savedChecks[id] === true;
+    const content = document.createElement('div');
+    const heading = document.createElement('div');
+    heading.className = 'title';
+    const badge = document.createElement('span');
+    badge.className = 'id';
+    badge.textContent = id;
+    heading.append(badge, document.createTextNode(title));
+    const description = document.createElement('div');
+    description.className = 'steps';
+    description.textContent = steps;
+    const modeLabel = document.createElement('div');
+    modeLabel.className = 'mode';
+    modeLabel.textContent = mode;
+    content.append(heading, description, modeLabel);
+    label.append(input, content);
+    list.append(label);
+  }
+  details.append(summary, list);
+  checklistRoot.append(details);
+}
+function updateProgress() {
+  const inputs = [...checklistRoot.querySelectorAll('input')];
+  const done = inputs.filter(input => input.checked).length;
+  document.getElementById('check-progress').textContent = `Отмечено ${done} из ${inputs.length}`;
+  savedChecks = Object.fromEntries(inputs.map(input => [input.dataset.scenario, input.checked]));
+  try { localStorage.setItem(storageKey, JSON.stringify(savedChecks)); } catch { /* Storage is optional. */ }
+}
+checklistRoot.addEventListener('change', updateProgress);
+document.getElementById('reset-checks').addEventListener('click', () => {
+  checklistRoot.querySelectorAll('input').forEach(input => { input.checked = false; });
+  updateProgress();
+});
+document.getElementById('expand-checks').addEventListener('click', event => {
+  const groups = [...checklistRoot.querySelectorAll('details')];
+  const shouldOpen = groups.some(group => !group.open);
+  groups.forEach(group => { group.open = shouldOpen; });
+  event.target.textContent = shouldOpen ? 'Свернуть всё' : 'Раскрыть всё';
+});
+document.getElementById('expand-checks').textContent = 'Свернуть всё';
+function updateViewer() {
+  const viewer = document.getElementById('viewer').value;
+  const name = viewer === 'A' ? 'Анна' : 'Борис';
+  document.getElementById('query-description').textContent = `Сервер получил подтверждённый вход: ${name}. Выбирает контакты, где owner_id = ${viewer}.`;
+  document.querySelectorAll('.result').forEach(result => {
+    const visible = result.dataset.owner === viewer;
+    result.classList.toggle('visible', visible);
+    result.querySelector('.status').textContent = visible ? 'Попадает в список и поиск' : 'Не выдаётся; прямая ссылка → «Контакт не найден»';
+  });
+}
+document.getElementById('viewer').addEventListener('change', updateViewer);
+updateViewer();
+updateProgress();
+</script>
+</body>
+</html>

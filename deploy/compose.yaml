@@ -12,11 +12,12 @@ x-logging: &logging
 # Everything that runs the app image: the app itself and its one-off jobs
 x-app: &app
   image: ${APP_IMAGE:?run deploy.sh, it sets APP_IMAGE}
-  environment:
+  environment: &database-environment
     POSTGRES_HOST: db
     POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
     POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+    LEGACY_OWNER_EMAIL: ${LEGACY_OWNER_EMAIL:-}
   depends_on:
     db:
       condition: service_healthy
@@ -42,6 +43,16 @@ services:
 
   app:
     <<: *app
+    environment:
+      <<: *database-environment
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?set BETTER_AUTH_URL in .env}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
+      SMTP_HOST: ${SMTP_HOST:?set SMTP_HOST in .env}
+      SMTP_PORT: ${SMTP_PORT:?set SMTP_PORT in .env}
+      SMTP_SECURE: ${SMTP_SECURE:?set SMTP_SECURE in .env}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:?set MAIL_FROM in .env}
     restart: unless-stopped
     # nginx proxies app.lichnocrm.ru here
     ports:
