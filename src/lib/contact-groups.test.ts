@@ -135,7 +135,7 @@ test("other field errors preserve selected groups and all input without writes",
   const data = form(["1", "2"]);
   data.set("email", "invalid");
   const values = readContactValues(data);
-  const result = await saveContact(db, values);
+  const result = await saveContact(db, "test-owner", values);
   assert.deepEqual("values" in result && result.values, values);
   assert.ok("errors" in result && result.errors?.email);
   assert.equal(state().writes, 0);
@@ -146,6 +146,7 @@ test("missing groups cannot partially create or update a contact", async () => {
     const { db, state } = database({ missingGroup: true });
     const result = await saveContact(
       db,
+      "test-owner",
       readContactValues(form(["1", "2"])),
       id,
     );
@@ -158,7 +159,7 @@ test("membership failures roll back both contact changes and membership replacem
   for (const id of [undefined, 5]) {
     const { db, state, events } = database({ failLinks: true });
     await assert.rejects(
-      saveContact(db, readContactValues(form(["1", "2"])), id),
+      saveContact(db, "test-owner", readContactValues(form(["1", "2"])), id),
       /Membership write failed/,
     );
     assert.deepEqual(state(), { name: "Before", memberships: [3], writes: 0 });
@@ -169,7 +170,12 @@ test("membership failures roll back both contact changes and membership replacem
 test("saving a contact replaces the entire set and takes the required locks", async () => {
   const { db, state, events } = database();
   assert.deepEqual(
-    await saveContact(db, readContactValues(form(["1", "2", "1"])), 5),
+    await saveContact(
+      db,
+      "test-owner",
+      readContactValues(form(["1", "2", "1"])),
+      5,
+    ),
     { id: 5 },
   );
   assert.deepEqual(state().memberships, [1, 2]);
@@ -180,14 +186,14 @@ test("saving a contact replaces the entire set and takes the required locks", as
 
 test("empty selection clears every membership", async () => {
   const { db, state } = database();
-  await saveContact(db, readContactValues(form()), 5);
+  await saveContact(db, "test-owner", readContactValues(form()), 5);
   assert.deepEqual(state().memberships, []);
 });
 
 test("a removed contact returns input without any write", async () => {
   const { db, state } = database({ missingContact: true });
   const values = readContactValues(form(["1", "2"]));
-  const result = await saveContact(db, values, 5);
+  const result = await saveContact(db, "test-owner", values, 5);
   assert.deepEqual("values" in result && result.values, values);
   assert.ok("message" in result && result.message);
   assert.equal(state().writes, 0);

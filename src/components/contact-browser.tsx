@@ -110,7 +110,7 @@ export function ContactBrowser({
       {visible.length === 0 ? (
         <p className="p-6 text-center text-16 text-muted">
           {contacts.length === 0 && groupIds.length === 0 && !query.trim()
-            ? "Контактов пока нет. Нажмите «Добавить контакт», чтобы создать первый."
+            ? "Добавь первый контакт"
             : query.trim()
               ? `Никого не нашлось по запросу «${query.trim()}»${groupIds.length === 0 ? "" : " в выбранных группах"}`
               : "Нет контактов в выбранных группах"}

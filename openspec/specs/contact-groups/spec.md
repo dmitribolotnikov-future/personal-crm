@@ -8,20 +8,21 @@
 
 ### Requirement: Пользовательские группы
 
-Пользователь SHALL иметь возможность просматривать свои группы и создавать группы с произвольными названиями. Создание группы не требует наличия контактов. Приложение MUST сохранять группы и их состав между посещениями, в том числе в другом браузере.
+An authenticated user SHALL be able to view their own groups and create groups with custom names. Group creation MUST NOT require existing contacts. The application MUST persist groups and memberships between visits, including another browser signed into the same account. Groups belonging to other accounts MUST NOT be exposed.
 
 #### Scenario: Создать свою группу
-- **WHEN** пользователь создаёт группу «Теннис»
-- **THEN** группа появляется в списке групп и доступна для выбора у контактов
-- **AND** новая группа пока не содержит контактов
+- **WHEN** an authenticated user creates «Теннис»
+- **THEN** the group appears in that user's group list and contact selectors
+- **AND** the new group has no members
 
 #### Scenario: Создать группу без контактов
-- **WHEN** в приложении ещё нет контактов и пользователь открывает управление группами
-- **THEN** он может создать группу «Семья»
+- **WHEN** the current user has no contacts and opens group management
+- **THEN** the user can create «Семья»
 
 #### Scenario: Открыть в другом браузере
-- **WHEN** пользователь создаёт группы и назначает их контактам, затем открывает приложение в другом браузере
-- **THEN** доступны те же группы с теми же названиями и составом
+- **WHEN** a user creates groups and assigns contacts, then signs into the same account in another browser
+- **THEN** the same group names and memberships are available
+- **AND** another account does not receive those groups or memberships
 
 ### Requirement: Участники группы
 
@@ -39,26 +40,31 @@
 
 ### Requirement: Проверка названия группы
 
-Название группы MUST быть непустым после удаления пробелов по краям. Эти пробелы MUST удаляться при сохранении. Создание и переименование MUST запрещать совпадение с названием другой группы без учёта регистра и пробелов по краям. При ошибке пользователь SHALL видеть объяснение у формы, введённое название сохраняется для исправления.
+A group name MUST be nonempty after trimming surrounding whitespace, which MUST be removed on save. Creation and renaming MUST reject another group with the same name, ignoring case and surrounding whitespace, only within the current owner's account. On error, the form SHALL explain the problem and preserve the entered name. Different users MUST be allowed to use the same name independently.
 
 #### Scenario: Пустое название
-- **WHEN** пользователь сохраняет название, состоящее только из пробелов
-- **THEN** форма сообщает, что нужно указать название
-- **AND** группа не создаётся и существующая группа не переименовывается
+- **WHEN** a user saves a name containing only whitespace
+- **THEN** the form says a name is required
+- **AND** no group is created or renamed
 
 #### Scenario: Пробелы по краям
-- **WHEN** пользователь создаёт группу с названием «  Аналитики  »
-- **THEN** группа сохраняется и показывается как «Аналитики»
+- **WHEN** a user creates a group named «  Аналитики  »
+- **THEN** it is stored and displayed as «Аналитики»
 
 #### Scenario: Повтор при создании
-- **WHEN** существует группа «Друзья» и пользователь создаёт « друзья »
-- **THEN** форма сообщает, что группа с таким названием уже есть
-- **AND** вторая группа не создаётся, введённое название остаётся в форме
+- **WHEN** the current user already owns «Друзья» and creates « друзья »
+- **THEN** the form reports the duplicate
+- **AND** no second group is created and the entered name remains in the form
 
 #### Scenario: Повтор при переименовании
-- **WHEN** существуют группы «Друзья» и «Теннис» и пользователь переименовывает «Теннис» в «ДРУЗЬЯ»
-- **THEN** форма сообщает о совпадении названия
-- **AND** обе группы сохраняют прежние названия и состав
+- **WHEN** the current user owns «Друзья» and «Теннис» and renames «Теннис» to «ДРУЗЬЯ»
+- **THEN** the form reports the duplicate
+- **AND** both groups retain their previous names and memberships
+
+#### Scenario: Identical names in different accounts
+- **WHEN** A owns «Друзья» and B creates or renames B's group to « друзья »
+- **THEN** B's save succeeds with the trimmed name
+- **AND** neither user's group exposes or changes the other user's members
 
 ### Requirement: Переименование группы
 

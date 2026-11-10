@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { expect, type Locator, type Page } from "@playwright/test";
+import { signIn } from "./helpers/auth";
 
 import {
   dateLabel,
@@ -138,6 +139,7 @@ test("create contacts with unset and monthly frequency and preserve the choice o
   });
 
   await test.step("a migrated contact retains its old card without reminders", async () => {
+    await signIn(page, process.env.LEGACY_OWNER_EMAIL!);
     await page
       .getByRole("link")
       .filter({ has: page.getByText(legacyContactName, { exact: true }) })
@@ -309,6 +311,7 @@ test("home reminders select overdue contacts, sort ties, ignore search and persi
     const context = await browser.newContext();
     try {
       const otherPage = await context.newPage();
+      await signIn(otherPage, database.ownerEmail);
       await otherPage.goto(new URL("/", page.url()).href);
       await expect(overdueBlock(otherPage)).toHaveText(before);
     } finally {

@@ -5,13 +5,16 @@
 
 // @next/env is CommonJS: an ES module (.mts) gets its exports as the default one
 import nextEnv from "@next/env";
-import { and, count, eq } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
+import { and, count, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
 // Explicit .ts extensions let the app image run this file with plain node
 import { getConnectionConfig } from "../src/db/connection.ts";
 import { contacts, notes } from "../src/db/schema.ts";
+import { user } from "../src/db/auth-schema.ts";
+import { getLegacyOwnerEmail } from "../src/lib/email.ts";
 
 const CONTACT_COUNT = 1000;
 const RANDOM_SEED = 20261010;
@@ -1107,7 +1110,7 @@ function momentBetween(from: Date, to: Date): Date {
   return date > to ? to : date;
 }
 
-type NewContact = typeof contacts.$inferInsert;
+type NewContact = Omit<typeof contacts.$inferInsert, "ownerId">;
 type NewNote = Omit<typeof notes.$inferInsert, "contactId">;
 type SeedContact = { contact: NewContact; notes: NewNote[] };
 
@@ -1229,6 +1232,7 @@ function* chunks<T>(items: T[], size: number): Generator<T[]> {
 async function main() {
   // Runs outside Next.js, so load .env the same way Next.js does
   nextEnv.loadEnvConfig(process.cwd());
+  const ownerEmail = getLegacyOwnerEmail();
 
   const now = new Date();
   const usedNames = new Set<string>();
@@ -1241,25 +1245,44 @@ async function main() {
   try {
     // Names and phones repeat from run to run (dates do not), so one person is enough to tell
     const marker = people.find((person) => person.contact.phone)!.contact;
-    const [{ value: markerCount }] = await db
-      .select({ value: count() })
-      .from(contacts)
-      .where(
-        and(eq(contacts.name, marker.name), eq(contacts.phone, marker.phone!)),
-      );
-    if (markerCount > 0) {
-      console.log(
-        `Test contacts are already in the database (found "${marker.name}"), nothing to add.`,
-      );
-      return;
-    }
-
     let noteCount = 0;
+    let added = false;
     await db.transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`seed:${ownerEmail}`}, 0))`,
+      );
+      await tx
+        .insert(user)
+        .values({ id: randomUUID(), email: ownerEmail })
+        .onConflictDoNothing();
+      const [owner] = await tx
+        .select({ id: user.id })
+        .from(user)
+        .where(eq(user.email, ownerEmail));
+      const [{ value: markerCount }] = await tx
+        .select({ value: count() })
+        .from(contacts)
+        .where(
+          and(
+            eq(contacts.ownerId, owner.id),
+            eq(contacts.name, marker.name),
+            eq(contacts.phone, marker.phone!),
+          ),
+        );
+      if (markerCount > 0) {
+        console.log(
+          `Test contacts are already in the database (found "${marker.name}"), nothing to add.`,
+        );
+        return;
+      }
+
+      added = true;
       for (const batch of chunks(people, 250)) {
         const inserted = await tx
           .insert(contacts)
-          .values(batch.map((person) => person.contact))
+          .values(
+            batch.map((person) => ({ ...person.contact, ownerId: owner.id })),
+          )
           .returning({ id: contacts.id, name: contacts.name });
         // Names are unique within the generated set, so they map rows back to people
         const idByName = new Map(inserted.map((row) => [row.name, row.id]));
@@ -1276,16 +1299,20 @@ async function main() {
 
     const [{ value: total }] = await db
       .select({ value: count() })
-      .from(contacts);
+      .from(contacts)
+      .innerJoin(user, eq(user.id, contacts.ownerId))
+      .where(eq(user.email, ownerEmail));
     console.log(
-      `Added ${people.length} contacts and ${noteCount} notes. Contacts in the database: ${total}.`,
+      `Added ${added ? people.length : 0} contacts and ${noteCount} notes. Owner contacts in the database: ${total}.`,
     );
   } finally {
     await pool.end();
   }
 }
 
-main().catch((error) => {
-  console.error(error);
+main().catch(() => {
+  console.error(
+    "Demo seed failed. Check LEGACY_OWNER_EMAIL and database configuration.",
+  );
   process.exit(1);
 });

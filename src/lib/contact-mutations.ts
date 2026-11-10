@@ -1,4 +1,4 @@
-import { asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import type { getDb } from "@/db";
@@ -14,9 +14,11 @@ class ContactSaveError extends Error {
 
 export async function saveContact(
   db: ReturnType<typeof getDb>,
+  ownerId: string,
   values: ContactValues,
   contactId?: number,
 ): Promise<ContactFormState | { id: number }> {
+  if (!ownerId) throw new Error("A verified owner is required.");
   const id = contactId === undefined ? undefined : idSchema.parse(contactId);
   const parsed = contactSchema.safeParse(values);
   if (!parsed.success) {
@@ -30,7 +32,7 @@ export async function saveContact(
         const existing = await tx
           .select({ id: contacts.id })
           .from(contacts)
-          .where(eq(contacts.id, id))
+          .where(and(eq(contacts.id, id), eq(contacts.ownerId, ownerId)))
           .for("update");
         if (existing.length === 0) {
           throw new ContactSaveError({
@@ -44,7 +46,12 @@ export async function saveContact(
         const selected = await tx
           .select({ id: contactGroups.id })
           .from(contactGroups)
-          .where(inArray(contactGroups.id, groupIds))
+          .where(
+            and(
+              inArray(contactGroups.id, groupIds),
+              eq(contactGroups.ownerId, ownerId),
+            ),
+          )
           .orderBy(asc(contactGroups.id))
           .for("key share");
         if (selected.length !== groupIds.length) {
@@ -66,6 +73,7 @@ export async function saveContact(
               .insert(contacts)
               .values({
                 ...fields,
+                ownerId,
                 contactFrequencySetAt: fields.contactFrequency
                   ? sql`now()`
                   : null,
@@ -82,20 +90,27 @@ export async function saveContact(
               else now()
             end`,
               })
-              .where(eq(contacts.id, id))
+              .where(and(eq(contacts.id, id), eq(contacts.ownerId, ownerId)))
               .returning({ id: contacts.id });
 
       if (id !== undefined) {
         await tx
           .delete(contactGroupMemberships)
-          .where(eq(contactGroupMemberships.contactId, saved.id));
+          .where(
+            and(
+              eq(contactGroupMemberships.contactId, saved.id),
+              eq(contactGroupMemberships.ownerId, ownerId),
+            ),
+          );
       }
       if (groupIds.length > 0) {
-        await tx
-          .insert(contactGroupMemberships)
-          .values(
-            groupIds.map((groupId) => ({ contactId: saved.id, groupId })),
-          );
+        await tx.insert(contactGroupMemberships).values(
+          groupIds.map((groupId) => ({
+            ownerId,
+            contactId: saved.id,
+            groupId,
+          })),
+        );
       }
       return { id: saved.id };
     });

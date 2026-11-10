@@ -1,13 +1,17 @@
 import { sql } from "drizzle-orm";
 import {
   check,
+  foreignKey,
   index,
   integer,
   pgTable,
   primaryKey,
   text,
   timestamp,
+  unique,
 } from "drizzle-orm/pg-core";
+
+import { user } from "./auth-schema.ts";
 
 // Both values come from the database clock: equal on insert, later after any update
 const timestamps = {
@@ -28,6 +32,9 @@ export const contacts = pgTable(
   "contacts",
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    ownerId: text("owner_id")
+      .notNull()
+      .references(() => user.id),
     name: text("name").notNull(),
     // "Who is this": role, relation, short description
     about: text("about"),
@@ -43,6 +50,8 @@ export const contacts = pgTable(
     ...timestamps,
   },
   (table) => [
+    unique("contacts_owner_id_id_unique").on(table.ownerId, table.id),
+    index("contacts_owner_id_idx").on(table.ownerId),
     check(
       "contacts_contact_frequency_check",
       sql`${table.contactFrequency} in (${sql.raw(
@@ -72,13 +81,19 @@ export const contactGroups = pgTable(
   "contact_groups",
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-    name: text("name").notNull(),
-    normalizedName: text("normalized_name")
+    ownerId: text("owner_id")
       .notNull()
-      .unique("contact_groups_normalized_name_unique"),
+      .references(() => user.id),
+    name: text("name").notNull(),
+    normalizedName: text("normalized_name").notNull(),
     ...timestamps,
   },
   (table) => [
+    unique("contact_groups_owner_name_unique").on(
+      table.ownerId,
+      table.normalizedName,
+    ),
+    unique("contact_groups_owner_id_id_unique").on(table.ownerId, table.id),
     check("contact_groups_name_check", sql`length(btrim(${table.name})) > 0`),
   ],
 );
@@ -86,6 +101,7 @@ export const contactGroups = pgTable(
 export const contactGroupMemberships = pgTable(
   "contact_group_memberships",
   {
+    ownerId: text("owner_id").notNull(),
     contactId: integer("contact_id")
       .notNull()
       .references(() => contacts.id, { onDelete: "cascade" }),
@@ -94,6 +110,17 @@ export const contactGroupMemberships = pgTable(
       .references(() => contactGroups.id, { onDelete: "cascade" }),
   },
   (table) => [
+    foreignKey({
+      name: "memberships_owner_contact_fk",
+      columns: [table.ownerId, table.contactId],
+      foreignColumns: [contacts.ownerId, contacts.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "memberships_owner_group_fk",
+      columns: [table.ownerId, table.groupId],
+      foreignColumns: [contactGroups.ownerId, contactGroups.id],
+    }).onDelete("cascade"),
+    index("memberships_owner_group_idx").on(table.ownerId, table.groupId),
     primaryKey({ columns: [table.contactId, table.groupId] }),
     index("contact_group_memberships_group_id_idx").on(table.groupId),
   ],

@@ -26,9 +26,11 @@ COPY --from=build --chown=node:node /app/.next/static ./.next/static
 # Packages the one-off jobs need beyond the server trace (drizzle-orm has no dependencies)
 COPY --from=build /app/node_modules/drizzle-orm ./node_modules/drizzle-orm
 COPY --from=build /app/node_modules/@next/env ./node_modules/@next/env
+COPY --from=build /app/node_modules/zod ./node_modules/zod
 COPY drizzle ./drizzle
 COPY scripts/migrate.mts scripts/seed.mts ./scripts/
-COPY src/db/connection.ts src/db/schema.ts ./src/db/
+COPY src/db/connection.ts src/db/schema.ts src/db/auth-schema.ts src/db/migrate.ts ./src/db/
+COPY src/lib/email.ts ./src/lib/
 USER node
 EXPOSE 3000
 CMD ["node", "server.js"]

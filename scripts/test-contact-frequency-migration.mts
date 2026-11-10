@@ -58,7 +58,17 @@ try {
     [oldContacts[0].id, "Заметка до обновления", "2020-01-01T12:00:00Z"],
   );
 
-  await migrate(drizzle(pool), { migrationsFolder: "drizzle" });
+  // Keep this regression focused on the pre-login schema; login has its own fixture.
+  const frequencyEntries = journal.entries.filter(
+    (entry: { idx: number }) => entry.idx < 4,
+  );
+  await writeFile(
+    path.join(folder, "meta/_journal.json"),
+    JSON.stringify({ ...journal, entries: frequencyEntries }),
+  );
+  for (const entry of frequencyEntries)
+    await cp(`drizzle/${entry.tag}.sql`, path.join(folder, `${entry.tag}.sql`));
+  await migrate(drizzle(pool), { migrationsFolder: folder });
   const { rows: newContacts } = await pool.query(
     "select * from contacts order by id",
   );
@@ -77,7 +87,7 @@ try {
     oldNotes,
   );
   // A repeated deploy must leave both old data and settings intact.
-  await migrate(drizzle(pool), { migrationsFolder: "drizzle" });
+  await migrate(drizzle(pool), { migrationsFolder: folder });
   assert.deepEqual(
     (await pool.query("select * from contacts order by id")).rows,
     newContacts,

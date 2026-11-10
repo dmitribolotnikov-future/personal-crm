@@ -39,8 +39,12 @@ fi
 step "Database"
 compose up --detach --wait db
 
+step "Stop old app before ownership migrations"
+# The old ownerless version must never run against the new private schema.
+compose stop app
+
 step "Migrations"
-# If they fail, the script stops here and the running version stays as it is
+# Failure leaves the app stopped for manual investigation; no automatic rollback.
 compose run --rm migrate
 
 step "New version"
